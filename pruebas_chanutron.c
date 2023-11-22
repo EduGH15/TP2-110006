@@ -1,10 +1,11 @@
-#include "src/tipo.h"
 #include <stdio.h>
 #include <string.h>
-#include "src/pokemon.h"
-#include "src/ataque.h"
+#include "src/TP1/tipo.h"
+#include "src/TP1/pokemon.h"
+#include "src/TP1/ataque.h"
 #include "src/juego.h"
-#include "src/lista.h"
+#include "src/TDA/lista.h"
+#include "src/TDA/menu_comandos.h"
 #include "pa2m.h"
 
 #define ARCHIVO_OK "ejemplos/correcto.txt"

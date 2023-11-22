@@ -1,9 +1,9 @@
 #include "juego.h"
-#include "lista.h"
-#include "tipo.h"
+#include "TDA/lista.h"
+#include "TP1/tipo.h"
 #include <stdbool.h>
-#include "pokemon.h"
-#include "ataque.h"
+#include "TP1/pokemon.h"
+#include "TP1/ataque.h"
 
 juego_t *juego_crear()
 {
