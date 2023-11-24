@@ -1,12 +1,12 @@
-/*
-#include "src/pokemon.h"
-#include "src/ataque.h"
-#include "src/juego.h"
-#include "src/lista.h"
-#include "src/adversario.h"
-*/
 #include <stdio.h>
 #include "src/TDA/menu_comandos.h"
+
+
+#include "src/TP1/pokemon.h"
+#include "src/TP1/ataque.h"
+#include "src/juego.h"
+#include "src/TDA/lista.h"
+#include "src/adversario.h"
 
 /**
 * Este main debe ser modificado para que el usuario pueda jugar el juego. Las
@@ -22,14 +22,7 @@
 
 int main(int argc, char *argv[])
 {
-	menu_t* menu = menu_crear();
-	
-	menu_destruir(menu);
-	return 0;
-}
-
-
-/*
+	   
 juego_t *juego = juego_crear();
 
 	//Pide al usuario un nombre de archivo de pokemones
@@ -47,9 +40,9 @@ juego_t *juego = juego_crear();
 
 	//Pedirle al jugador por consola que ingrese los 3 nombres de pokemon que quiere utilizar
 	char *eleccionJugador1, *eleccionJugador2, *eleccionJugador3;
-	jugador_seleccionar_pokemon(juego, &eleccion_adversario1,
-				    &eleccion_adversario2,
-				    &eleccion_adversario3);
+	jugador_seleccionar_pokemon(juego, &eleccionJugador1,
+				    &eleccionJugador2,
+				    &eleccionJugador3);
 
 	//pedirle al adversario que indique los 3 pokemon que quiere usar
 	char *eleccionAdversario1, *eleccionAdversario2, *eleccionAdversario3;
@@ -86,4 +79,6 @@ juego_t *juego = juego_crear();
 	}
 
 	juego_destruir(juego);
-*/
+}
+
+

@@ -43,7 +43,7 @@ void inicializar_ataque(ataque_t ataques[MAX_ATAQUES], int cantidad_ataques)
 {
 	strcpy(ataques[cantidad_ataques].nombre, "");
 	ataques[cantidad_ataques].tipo = NORMAL;
-	ataques[cantidad_ataques].poder = SIN_PODER;
+	ataques[cantidad_ataques].poder = (unsigned int)SIN_PODER;
 }
 
 // Pre: El parámetro cantidad debe ser igual a cero.

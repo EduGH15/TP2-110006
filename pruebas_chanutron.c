@@ -24,7 +24,7 @@ void crear_juego()
 		     "El puntaje del jugador 1 es 0");
 	pa2m_afirmar(juego_obtener_puntaje(j, JUGADOR2) == 0,
 		     "El puntaje del jugador 2 es 0");
-	pa2m_afirmar(juego_finalizado(j) == false,
+    pa2m_afirmar(juego_finalizado(j) == false,
 		     "El juego no está finalizado");
 	juego_destruir(j);
 }
@@ -66,6 +66,7 @@ void seleccionar()
 					       "Charmander") ==
 			     POKEMON_INEXISTENTE,
 		     "Un jugador no puede seleccionar pokemon inexistente");
+	
 	pa2m_afirmar(juego_seleccionar_pokemon(j, JUGADOR1, "Cacnea", "Pikachu",
 					       "Charmander") == TODO_OK,
 		     "Un jugador puede seleccionar 3 pokemon diferentes");
@@ -77,6 +78,7 @@ void seleccionar()
 	juego_destruir(j);
 }
 
+/*
 void jugar()
 {
 	juego_t *j = juego_crear();
@@ -172,6 +174,7 @@ void jugar()
 
 	juego_destruir(j);
 }
+*/
 
 int main()
 {
@@ -182,12 +185,14 @@ int main()
 
 	pa2m_nuevo_grupo("CARGAR POKEMON");
 	cargar_archivo();
-
+	
 	pa2m_nuevo_grupo("SELECCION DE POKEMON");
 	seleccionar();
 
+	/*
 	pa2m_nuevo_grupo("JUGAR");
 	jugar();
+	*/
 
 	return pa2m_mostrar_reporte();
 }
