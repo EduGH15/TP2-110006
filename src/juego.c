@@ -1,13 +1,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "juego.h"
-#include "TDA/lista.h"
-#include "TP1/tipo.h"
-#include "TP1/pokemon.h"
-#include "TP1/ataque.h"
+#include "lista.h"
+#include "tipo.h"
+#include "pokemon.h"
+#include "ataque.h"
 
 typedef struct {
-    lista_t* pokemones; 
+    lista_t* pokemones;
+    lista_t* ataques_disponibles;
     int puntaje;
 } jugador_t;
 
@@ -33,11 +34,11 @@ juego_t *juego_crear()
 
     juego->jugador_2 = calloc(1, sizeof(jugador_t));
     if (!juego->jugador_2) {
+        free(juego->jugador_1);
         free(juego);
         return NULL;
     }
 
-    juego->info_pokemon == NULL;
     juego->finalizado = false;
 
     return juego;
@@ -54,6 +55,7 @@ JUEGO_ESTADO juego_cargar_pokemon(juego_t *juego, char *archivo) {
     }
 
     if(pokemon_cantidad(info_pokemon) < 6){
+        pokemon_destruir_todo(info_pokemon);
         return POKEMON_INSUFICIENTES;
     }
 
@@ -140,108 +142,179 @@ JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
     return TODO_OK;
 }
 
+/*------------------------------------------------------------------------------------------------*/
 
-/*
-void buscar_pokemon_por_nombre(pokemon_t *pokemon, void *nombre_pokemon, void *pokemon_seleccionado) {
-    const char *nombre = *(const char **)nombre_pokemon;
+// Pre: ----------------------------------------------------------------
+//Post: Devuelve el puntaje de haber realizado un ataque a cierto tipo de pokemon.
+int calcular_puntaje(ataque_t* ataque, pokemon_t* pokemon_atacado) {
+    enum TIPO tipo_ataque = ataque->tipo;
+    enum TIPO tipo_pokemon_atacado = pokemon_tipo(pokemon_atacado);
 
-    // Comparar nombres de pokemon
-    if (strcmp(pokemon_nombre(pokemon), nombre) == 0) {
-        // Pokémon encontrado
-        *(pokemon_t **)pokemon_seleccionado = pokemon;
+    if (tipo_ataque == tipo_pokemon_atacado) {
+        return ataque->poder;
+    }
+
+    switch (tipo_ataque) {
+        case NORMAL:
+            return ataque->poder;
+        case FUEGO:
+            return (tipo_pokemon_atacado == PLANTA) ? 3 * ataque->poder : (tipo_pokemon_atacado == AGUA) ? ataque->poder / 2 : ataque->poder;
+        case PLANTA:
+            return (tipo_pokemon_atacado == ROCA) ? 3 * ataque->poder : (tipo_pokemon_atacado == FUEGO) ? ataque->poder / 2 : ataque->poder;
+        case ROCA:
+            return (tipo_pokemon_atacado == ELECTRICO) ? 3 * ataque->poder : (tipo_pokemon_atacado == PLANTA) ? ataque->poder / 2 : ataque->poder;
+        case ELECTRICO:
+            return (tipo_pokemon_atacado == AGUA) ? 3 * ataque->poder : (tipo_pokemon_atacado == ROCA) ? ataque->poder / 2 : ataque->poder;
+        case AGUA:
+            return (tipo_pokemon_atacado == FUEGO) ? 3 * ataque->poder : (tipo_pokemon_atacado == ELECTRICO) ? ataque->poder / 2 : ataque->poder;
+    }
+
+    return ataque->poder;
+}
+
+void calcular_efectividad(ataque_t *ataque, pokemon_t *pokemon_atacado, resultado_jugada_t *resultado) {
+    if(!ataque  || !pokemon_atacado || !resultado){
+        return;
+    } 
+    enum TIPO tipo_ataque = ataque->tipo;
+    enum TIPO tipo_pokemon = pokemon_tipo(pokemon_atacado);
+
+    if (tipo_ataque == tipo_pokemon) {
+        resultado->jugador1 = ATAQUE_REGULAR;
+        resultado->jugador2 = ATAQUE_REGULAR;
+    } else if (
+        (tipo_ataque == FUEGO && tipo_pokemon == PLANTA) ||
+        (tipo_ataque == PLANTA && tipo_pokemon == ROCA) ||
+        (tipo_ataque == ROCA && tipo_pokemon == ELECTRICO) ||
+        (tipo_ataque == ELECTRICO && tipo_pokemon == AGUA) ||
+        (tipo_ataque == AGUA && tipo_pokemon == FUEGO)
+    ) {
+        resultado->jugador1 = ATAQUE_EFECTIVO;
+        resultado->jugador2 = ATAQUE_INEFECTIVO;
+    } else if (
+        (tipo_pokemon == FUEGO && tipo_ataque == PLANTA) ||
+        (tipo_pokemon == PLANTA && tipo_ataque == FUEGO) ||
+        (tipo_pokemon == ROCA && tipo_ataque == PLANTA) ||
+        (tipo_pokemon == ELECTRICO && tipo_ataque == ROCA) ||
+        (tipo_pokemon == AGUA && tipo_ataque == ELECTRICO)
+    ) {
+        resultado->jugador1 = ATAQUE_INEFECTIVO;
+        resultado->jugador2 = ATAQUE_EFECTIVO;
+    } else {
+        resultado->jugador1 = ATAQUE_REGULAR;
+        resultado->jugador2 = ATAQUE_REGULAR;
     }
 }
 
-void buscar_ataque_por_nombre(const struct ataque *ataque, void *nombre_ataque, void *ataque_seleccionado) {
-    const char *nombre = *(const char **)nombre_ataque;
+// Función comparadora para buscar un pokemon por nombre en la lista
+int comparador_buscar_pokemon(void *elemento, void *contexto) {
+    const char *nombre_pokemon = (const char *)contexto;
+    pokemon_t *pokemon = (pokemon_t *)elemento;
 
-    // Comparar nombres de ataques
-    if (strcmp(ataque->nombre, nombre) == 0) {
-        // Ataque encontrado
-        *(const struct ataque **)ataque_seleccionado = ataque;
+    return strcmp(pokemon_nombre(pokemon), nombre_pokemon);
+}
+
+bool ataque_ya_utilizado(pokemon_t* pokemon, ataque_t* ataque) {
+    lista_iterador_t *iterador = lista_iterador_crear(NULL);
+    while (lista_iterador_tiene_siguiente(iterador)) {
+        const struct ataque *ataque_actual = lista_iterador_elemento_actual(iterador);
+        if (ataque_actual == ataque) {
+            lista_iterador_destruir(iterador);
+            return true; 
+        }
+        lista_iterador_avanzar(iterador);
     }
+    lista_iterador_destruir(iterador);
+    return false;
 }
 
-pokemon_t *buscar_pokemon_seleccionado(lista_t *selecciones, const char *nombre_pokemon) {
-    // Buscar el pokémon en la lista de selecciones
-    pokemon_t *pokemon_seleccionado = NULL;
-    con_cada_pokemon(selecciones, buscar_pokemon_por_nombre, nombre_pokemon, pokemon_seleccionado);
-    return pokemon_seleccionado;
+// Actualiza la lista de ataques del pokemon después de utilizar un ataque
+void marcar_ataque_utilizado(pokemon_t *pokemon, const struct ataque *ataque) {
+    lista_iterador_t *iterador = lista_iterador_crear(NULL);
+    while (lista_iterador_tiene_siguiente(iterador)) {
+        const struct ataque *ataque_actual = lista_iterador_elemento_actual(iterador);
+        if (ataque_actual == ataque) {
+            lista_iterador_quitar(iterador);
+            break;
+        }
+        lista_iterador_avanzar(iterador);
+    }
+    lista_iterador_destruir(iterador);
 }
 
-const struct ataque *buscar_ataque_seleccionado(pokemon_t *pokemon, const char *nombre_ataque) {
-    // Buscar el ataque en el pokémon
-    const struct ataque *ataque_seleccionado = NULL;
-    con_cada_ataque(pokemon, buscar_ataque_por_nombre, &nombre_ataque, ataque_seleccionado);
-    return ataque_seleccionado;
-}
-
-bool ataque_ya_utilizado(lista_t *ataques_utilizados, const struct ataque *ataque) {
-    // Verificar si el ataque ya fue utilizado
-    return con_cada_ataque(ataques_utilizados, comparar_ataque, &ataque, NULL) > 0;
-}
-
-RESULTADO_ATAQUE calcular_puntaje(juego_t *juego, pokemon_t *atacante, const struct ataque *ataque, pokemon_t *defensor) {
-    // Calcular el puntaje según las reglas del juego
-    // ...
-
-    return ATAQUE_REGULAR;  // Cambiar según la lógica de puntaje
-}
-
-
-int comparar_ataque(const struct ataque *ataque1, void *ataque2) {
-    const struct ataque *ataque = *(const struct ataque **)ataque2;
-
-    // Comparar nombres de ataques
-    return strcmp(ataque1->nombre, ataque->nombre);
-}
+// función principal
 
 resultado_jugada_t juego_jugar_turno(juego_t *juego, jugada_t jugada_jugador1,
-				     jugada_t jugada_jugador2)
-{
-	 resultado_jugada_t resultado;
-    resultado.jugador1 = ATAQUE_ERROR;
-    resultado.jugador2 = ATAQUE_ERROR;
+                                     jugada_t jugada_jugador2) {
 
-    // Buscar los pokémon seleccionados por ambos jugadores
-    pokemon_t *pokemon_jugador1 = buscar_pokemon_seleccionado(juego->selecciones_jugador1, jugada_jugador1.pokemon);
-    pokemon_t *pokemon_jugador2 = buscar_pokemon_seleccionado(juego->selecciones_jugador2, jugada_jugador2.pokemon);
+    resultado_jugada_t resultado_ataque;
+    resultado_ataque.jugador1 = ATAQUE_ERROR;
+    resultado_ataque.jugador2 = ATAQUE_ERROR;
 
-    // Verificar si los pokémon existen en las selecciones
+    if (!juego) {
+        return resultado_ataque;
+    }
+
+    pokemon_t *pokemon_jugador1 = lista_buscar_elemento(juego->jugador_1->pokemones, comparador_buscar_pokemon, jugada_jugador1.pokemon);
+    pokemon_t *pokemon_jugador2 = lista_buscar_elemento(juego->jugador_2->pokemones, comparador_buscar_pokemon, jugada_jugador1.pokemon);
+
     if (!pokemon_jugador1 || !pokemon_jugador2) {
-        return resultado;
+        return resultado_ataque;
     }
 
-    // Buscar los ataques seleccionados por ambos jugadores
-    const struct ataque *ataque_jugador1 = buscar_ataque_seleccionado(pokemon_jugador1, jugada_jugador1.ataque);
-    const struct ataque *ataque_jugador2 = buscar_ataque_seleccionado(pokemon_jugador2, jugada_jugador2.ataque);
+    const struct ataque *ataque_jugador1 = pokemon_buscar_ataque(pokemon_jugador1, jugada_jugador1.ataque);
+    const struct ataque *ataque_jugador2 = pokemon_buscar_ataque(pokemon_jugador2, jugada_jugador2.ataque);
 
-    // Verificar si los ataques existen en los pokémon seleccionados
     if (!ataque_jugador1 || !ataque_jugador2) {
-        return resultado;
+        return resultado_ataque;
     }
 
-    // Verificar si los ataques ya fueron utilizados en turnos anteriores
-    if (ataque_ya_utilizado(juego->ataques_utilizados, ataque_jugador1) || ataque_ya_utilizado(juego->ataques_utilizados, ataque_jugador2)) {
-        return resultado;
+    if (ataque_ya_utilizado(pokemon_jugador1, ataque_jugador1) || ataque_ya_utilizado(pokemon_jugador2, ataque_jugador2)) {
+        return resultado_ataque;
     }
 
-    // Marcar los ataques como utilizados
-    lista_insertar_ultimo(juego->ataques_utilizados, ataque_jugador1);
-    lista_insertar_ultimo(juego->ataques_utilizados, ataque_jugador2);
+    int puntaje_jugador1 = calcular_puntaje(ataque_jugador1, pokemon_jugador2);
+    int puntaje_jugador2 = calcular_puntaje(ataque_jugador2, pokemon_jugador1);
 
-    // Calcular el puntaje para cada jugador
-    resultado.jugador1 = calcular_puntaje(juego, pokemon_jugador1, ataque_jugador1, pokemon_jugador2);
-    resultado.jugador2 = calcular_puntaje(juego, pokemon_jugador2, ataque_jugador2, pokemon_jugador1);
+    juego->jugador_1->puntaje += puntaje_jugador1;
+    juego->jugador_2->puntaje += puntaje_jugador2;
 
+    marcar_ataque_utilizado(pokemon_jugador1, ataque_jugador1);
+    marcar_ataque_utilizado(pokemon_jugador2, ataque_jugador2);
+
+    if (lista_tamanio(pokemon_jugador1->ataques) == 0 || lista_tamanio(pokemon_jugador2->ataques) == 0) {
+        juego->finalizado = true;
+    }
+
+    resultado->jugador1 = juego->jugador_1->puntaje;
+    resultado->jugador1 = juego->jugador_3->puntaje;
     return resultado;
 }
 
+/*------------------------------------------------------------------------------------------------*/
+
+int juego_obtener_puntaje(juego_t *juego, JUGADOR jugador) {
+    if (!juego) {
+        return 0;  
+    }
+
+    jugador_t *jugador_actual = (jugador == JUGADOR1) ? juego->jugador_1 : juego->jugador_2;
+
+    if (!jugador_actual) {
+        return 0;  
+    }
+
+    return jugador_actual->puntaje;
+}
 
 
+bool juego_finalizado(juego_t *juego){
+    if(!juego){
+        return false;
+    }
+    return juego->finalizado;
+}
 
-
-*/
 
 void juego_destruir(juego_t *juego) {
     if (juego == NULL) {

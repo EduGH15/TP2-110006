@@ -1,7 +1,7 @@
 #ifndef JUEGO_H_
 #define JUEGO_H_
 
-#include "TDA/lista.h"
+#include "lista.h"
 #include <stdbool.h>
 
 typedef enum {

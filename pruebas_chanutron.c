@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
-#include "src/TP1/tipo.h"
-#include "src/TP1/pokemon.h"
-#include "src/TP1/ataque.h"
+#include "src/tipo.h"
+#include "src/pokemon.h"
+#include "src/ataque.h"
 #include "src/juego.h"
-#include "src/TDA/lista.h"
-#include "src/TDA/menu_comandos.h"
+#include "src/lista.h"
+#include "src/menu_comandos.h"
 #include "pa2m.h"
 
 #define ARCHIVO_OK "ejemplos/correcto.txt"
@@ -78,7 +78,6 @@ void seleccionar()
 	juego_destruir(j);
 }
 
-/*
 void jugar()
 {
 	juego_t *j = juego_crear();
@@ -105,16 +104,15 @@ void jugar()
 	jugada_t validaj12 = { .pokemon = "Pikachu", .ataque = "Chispa" };
 	jugada_t validaj22 = { .pokemon = "Floatzel", .ataque = "Buceo" };
 
-	jugada_t validaj13 = { .pokemon = "Charmander",
-			       .ataque = "Lanzallamas" };
+	jugada_t validaj13 = { .pokemon = "Charmander",.ataque = "Lanzallamas" };
 	jugada_t validaj23 = { .pokemon = "Cacnea", .ataque = "Hojas" };
-
-	resultado_jugada_t obtenido;
+	
 
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, invalida1, invalida1))
 				.jugador1 == ATAQUE_ERROR,
 		"Realizar una jugada inválida con ambos jugadores devuelve ATAQUE_ERROR");
+	
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, invalida1, validaj21))
 				.jugador1 == ATAQUE_ERROR,
@@ -172,9 +170,10 @@ void jugar()
 	pa2m_afirmar(juego_finalizado(j) == false,
 		     "El juego no está finalizado");
 
+
 	juego_destruir(j);
-}
-*/
+	}
+
 
 int main()
 {
@@ -185,14 +184,12 @@ int main()
 
 	pa2m_nuevo_grupo("CARGAR POKEMON");
 	cargar_archivo();
-	
+
 	pa2m_nuevo_grupo("SELECCION DE POKEMON");
 	seleccionar();
-
-	/*
+	
 	pa2m_nuevo_grupo("JUGAR");
 	jugar();
-	*/
 
 	return pa2m_mostrar_reporte();
 }

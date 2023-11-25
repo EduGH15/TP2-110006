@@ -1,7 +1,7 @@
-#include "TDA/lista.h"
+#include "lista.h"
 #include "juego.h"
 #include "adversario.h"
-#include "TP1/pokemon.h"
+#include "pokemon.h"
 
 adversario_t *adversario_crear(lista_t *pokemon)
 {
