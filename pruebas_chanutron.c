@@ -1,11 +1,10 @@
+#include "src/tipo.h"
 #include <stdio.h>
 #include <string.h>
-#include "src/tipo.h"
 #include "src/pokemon.h"
 #include "src/ataque.h"
 #include "src/juego.h"
 #include "src/lista.h"
-#include "src/menu_comandos.h"
 #include "pa2m.h"
 
 #define ARCHIVO_OK "ejemplos/correcto.txt"
@@ -24,7 +23,7 @@ void crear_juego()
 		     "El puntaje del jugador 1 es 0");
 	pa2m_afirmar(juego_obtener_puntaje(j, JUGADOR2) == 0,
 		     "El puntaje del jugador 2 es 0");
-    pa2m_afirmar(juego_finalizado(j) == false,
+	pa2m_afirmar(juego_finalizado(j) == false,
 		     "El juego no está finalizado");
 	juego_destruir(j);
 }
@@ -66,7 +65,6 @@ void seleccionar()
 					       "Charmander") ==
 			     POKEMON_INEXISTENTE,
 		     "Un jugador no puede seleccionar pokemon inexistente");
-	
 	pa2m_afirmar(juego_seleccionar_pokemon(j, JUGADOR1, "Cacnea", "Pikachu",
 					       "Charmander") == TODO_OK,
 		     "Un jugador puede seleccionar 3 pokemon diferentes");
@@ -104,15 +102,16 @@ void jugar()
 	jugada_t validaj12 = { .pokemon = "Pikachu", .ataque = "Chispa" };
 	jugada_t validaj22 = { .pokemon = "Floatzel", .ataque = "Buceo" };
 
-	jugada_t validaj13 = { .pokemon = "Charmander",.ataque = "Lanzallamas" };
+	jugada_t validaj13 = { .pokemon = "Charmander",
+			       .ataque = "Lanzallamas" };
 	jugada_t validaj23 = { .pokemon = "Cacnea", .ataque = "Hojas" };
-	
+
+	resultado_jugada_t obtenido;
 
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, invalida1, invalida1))
 				.jugador1 == ATAQUE_ERROR,
 		"Realizar una jugada inválida con ambos jugadores devuelve ATAQUE_ERROR");
-	
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, invalida1, validaj21))
 				.jugador1 == ATAQUE_ERROR,
@@ -121,16 +120,18 @@ void jugar()
 		(obtenido = juego_jugar_turno(j, validaj11, invalida2))
 				.jugador2 == ATAQUE_ERROR,
 		"Realizar una jugada inválida con el segundo jugador devuelve ATAQUE_ERROR para el segundo jugador");
+
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, validaj11, validaj21))
 					.jugador1 == ATAQUE_REGULAR &&
 			obtenido.jugador2 == ATAQUE_REGULAR,
 		"Realizar una jugada valida de tipo normal devuelve ATAQUE_REGULAR");
+
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, validaj11, validaj21))
 				.jugador1 == ATAQUE_ERROR,
 		"No se puede volver a utilizar el mismo ataque/pokemon dos veces");
-
+	
 	pa2m_afirmar(juego_obtener_puntaje(j, JUGADOR1) == 1,
 		     "El puntaje del jugador 1 es 1");
 	pa2m_afirmar(juego_obtener_puntaje(j, JUGADOR2) == 2,
@@ -170,10 +171,8 @@ void jugar()
 	pa2m_afirmar(juego_finalizado(j) == false,
 		     "El juego no está finalizado");
 
-
 	juego_destruir(j);
-	}
-
+}
 
 int main()
 {
@@ -187,7 +186,7 @@ int main()
 
 	pa2m_nuevo_grupo("SELECCION DE POKEMON");
 	seleccionar();
-	
+
 	pa2m_nuevo_grupo("JUGAR");
 	jugar();
 

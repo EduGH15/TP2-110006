@@ -1,11 +1,9 @@
 #include <stdio.h>
-#include "src/TDA/menu_comandos.h"
-
-
-#include "src/TP1/pokemon.h"
-#include "src/TP1/ataque.h"
+#include "src/menu_comandos.h"
+#include "src/pokemon.h"
+#include "src/ataque.h"
 #include "src/juego.h"
-#include "src/TDA/lista.h"
+#include "src/lista.h"
 #include "src/adversario.h"
 
 /**
@@ -32,8 +30,8 @@ juego_t *juego = juego_crear();
 	juego_cargar_pokemon(juego, archivo);
 
 	//Crea un adversario que será utilizado como jugador 2
-	adversario_t *adversario =
-		adversario_crear(juego_listar_pokemon(juego));
+	// adversario_t *adversario =
+	// 	adversario_crear(juego_listar_pokemon(juego));
 
 	//Mostrar el listado de pokemones por consola para que el usuario sepa las opciones que tiene
 	mostrar_pokemon_disponibles(juego);
@@ -45,37 +43,37 @@ juego_t *juego = juego_crear();
 				    &eleccionJugador3);
 
 	//pedirle al adversario que indique los 3 pokemon que quiere usar
-	char *eleccionAdversario1, *eleccionAdversario2, *eleccionAdversario3;
-	adversario_seleccionar_pokemon(adversario, &eleccionAdversario1,
-				       &eleccionAdversario2,
-				       &eleccionAdversario3);
+	// char *eleccionAdversario1, *eleccionAdversario2, *eleccionAdversario3;
+	// adversario_seleccionar_pokemon(adversario, &eleccionAdversario1,
+	// 			       &eleccionAdversario2,
+	// 			       &eleccionAdversario3);
 
 	//Seleccionar los pokemon de los jugadores
 	juego_seleccionar_pokemon(juego, JUGADOR1, eleccionJugador1,
 				  eleccionJugador2, eleccionJugador3);
-	juego_seleccionar_pokemon(juego, JUGADOR2, eleccionAdversario1,
-				  eleccionAdversario2, eleccionAdversario3);
+	// juego_seleccionar_pokemon(juego, JUGADOR2, eleccionAdversario1,
+	// 			  eleccionAdversario2, eleccionAdversario3);
 
 	//informarle al adversario cuales son los pokemon del jugador
-	adversario_pokemon_seleccionado(adversario, eleccionJugador1,
-					eleccionJugador2, eleccionJugador3);
+	// adversario_pokemon_seleccionado(adversario, eleccionJugador1,
+	// 				eleccionJugador2, eleccionJugador3);
 
 	while (!juego_finalizado(juego)) {
 		resultado_jugada_t resultado_ronda;
 
 		//Pide al jugador que ingrese por consola el pokemon y ataque para la siguiente ronda
-		jugada_t jugada_jugador = jugador_pedir_nombre_y_ataque();
+		// jugada_t jugada_jugador = jugador_pedir_nombre_y_ataque();
 
 		//Pide al adversario que informe el pokemon y ataque para la siguiente ronda
-		jugada_t jugada_adversario =
-			adversario_proxima_jugada(adversario);
+		// jugada_t jugada_adversario =
+		// 	adversario_proxima_jugada(adversario);
 
 		//jugar la ronda y después comprobar que esté todo ok, si no, volver a pedir la jugada del jugador
 		resultado_ronda = juego_jugar_turno(juego, jugada_jugador,
 						    jugada_adversario);
 
 		//Si se pudo jugar el turno, le informo al adversario la jugada realizada por el jugador
-		adversario_informar_jugada(adversario, jugada_jugador);
+		//adversario_informar_jugada(adversario, jugada_jugador);
 	}
 
 	juego_destruir(juego);
