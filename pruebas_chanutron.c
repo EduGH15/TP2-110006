@@ -136,7 +136,7 @@ void jugar()
 		     "El puntaje del jugador 1 es 1");
 	pa2m_afirmar(juego_obtener_puntaje(j, JUGADOR2) == 2,
 		     "El puntaje del jugador 2 es 2");
-
+	
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, validaj12, validaj22))
 				.jugador1 == ATAQUE_EFECTIVO,

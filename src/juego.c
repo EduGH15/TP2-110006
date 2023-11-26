@@ -38,6 +38,7 @@ jugador_t* jugador_crear() {
         free(jugador);
         return NULL;
     }
+    jugador->puntaje = 0;
 
     return jugador;
 }
@@ -251,6 +252,9 @@ int buscar_ataque(void* p1, void *p2){
 
 bool ataque_ya_utilizado(jugador_t* jugador, const struct ataque* ataque) {
 
+    if(!jugador || !ataque){
+        return false;
+    } 
 	return lista_buscar_elemento(jugador->ataques_disponibles, buscar_ataque, (void*) ataque) == NULL;
 }
 
@@ -260,7 +264,7 @@ void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque) 
     size_t posicion = 0;
 
     while (lista_iterador_tiene_siguiente(iterador)) {
-        void *elemento_actual = lista_iterador_elemento_actual(iterador);
+        void* elemento_actual = lista_iterador_elemento_actual(iterador);
         if (comparador_buscar_ataque(elemento_actual, (void*)ataque)) {
             lista_quitar_de_posicion(jugador->ataques_disponibles, posicion);
             break;
