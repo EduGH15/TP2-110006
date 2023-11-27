@@ -8,6 +8,14 @@
 #include <string.h>
 #include <stdio.h>
 
+// Estructura para almacenar el contexto de búsqueda de un ataque
+struct contexto_buscar_ataque {
+    const struct ataque *ataque_a_eliminar;
+    size_t posicion_encontrada;
+    bool encontrado;
+};
+
+
 typedef struct {
     lista_t* pokemones;
     lista_t* ataques_disponibles;
@@ -253,14 +261,17 @@ int comparador_buscar_pokemon(void *elemento, void *contexto) {
 
 
 bool comparador_buscar_ataque(void *elemento, void *contexto) {
-    if(!elemento || !contexto){
+    if (!elemento || !contexto) {
         return false;
     }
-    const struct ataque *ataque = (const struct ataque *)elemento;
-    const struct ataque *ataque_a_eliminar = (const struct ataque *)contexto;
 
-    return ataque == ataque_a_eliminar;
+    const struct ataque *ataque = (const struct ataque *)elemento;
+    const char *nombre_a_eliminar = (const char *)contexto;
+
+    // Comparar el nombre del ataque
+    return strcmp(ataque->nombre, nombre_a_eliminar) == 0;
 }
+
 
 
 int buscar_ataque(void* p1, void *p2){
@@ -278,20 +289,24 @@ bool ataque_ya_utilizado(jugador_t* jugador, const struct ataque* ataque) {
 	return lista_buscar_elemento(jugador->ataques_disponibles, buscar_ataque, (void*) ataque) == NULL;
 }
 
-//Actualiza la lista de ataques del pokemon después de utilizar un ataque
+// Actualiza la lista de ataques del pokemon después de utilizar un ataque
 void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque) {
-    if(!jugador || !ataque){
+    if (!jugador || !ataque) {
         return;
     }
+
+    const char *nombre_ataque_a_eliminar = ataque->nombre;
+
     lista_iterador_t *iterador = lista_iterador_crear(jugador->ataques_disponibles);
-    if(iterador == NULL){
+    if (iterador == NULL) {
         return;
     }
+
     size_t posicion = 0;
 
     while (lista_iterador_tiene_siguiente(iterador)) {
-        void* elemento_actual = lista_iterador_elemento_actual(iterador);
-        if (comparador_buscar_ataque(elemento_actual, (void*)ataque)) {
+        void *elemento_actual = lista_iterador_elemento_actual(iterador);
+        if (comparador_buscar_ataque(elemento_actual, (void *)nombre_ataque_a_eliminar)) {
             lista_quitar_de_posicion(jugador->ataques_disponibles, posicion);
             break;
         }
