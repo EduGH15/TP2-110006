@@ -18,6 +18,7 @@ struct juego {
     jugador_t* jugador_1;   
     jugador_t* jugador_2; 
     informacion_pokemon_t* info_pokemon;
+    lista_t* pokemones_totales;
     int cantidad_rondas;
     bool finalizado;
 };
@@ -38,6 +39,7 @@ jugador_t* jugador_crear() {
         free(jugador);
         return NULL;
     }
+
     jugador->puntaje = 0;
 
     return jugador;
@@ -68,11 +70,26 @@ juego_t* juego_crear() {
         free(juego);
         return NULL;
     }
-
+    juego->pokemones_totales = lista_crear();
+    if(!juego->pokemones_totales){
+        jugador_destruir(juego->jugador_1);
+        jugador_destruir(juego->jugador_2);
+        free(juego);
+        return NULL;
+    }
     juego->cantidad_rondas = 9;
     juego->finalizado = false;
 
     return juego;
+}
+
+// Función auxiliar para agregar pokemon a la lista
+void agregar_pokemon_a_lista(pokemon_t *pokemon, void *contexto) {
+    if(!pokemon || !contexto) {
+        return;
+    }
+    lista_t *lista_pokemon = (lista_t *)contexto;
+    lista_insertar(lista_pokemon, pokemon);
 }
 
 JUEGO_ESTADO juego_cargar_pokemon(juego_t *juego, char *archivo) {
@@ -91,6 +108,8 @@ JUEGO_ESTADO juego_cargar_pokemon(juego_t *juego, char *archivo) {
     }
 
     juego->info_pokemon = info_pokemon;
+    con_cada_pokemon(juego->info_pokemon, agregar_pokemon_a_lista, juego->pokemones_totales);
+
     return TODO_OK;
 }
 
@@ -103,19 +122,10 @@ int juego_obtener_puntaje(juego_t *juego, JUGADOR jugador) {
 }
 
 bool juego_finalizado(juego_t *juego) {
-    if (juego == NULL) {
+    if (!juego) {
         return false;
     }
     return juego->finalizado;
-}
-
-// Función auxiliar para agregar pokemon a la lista
-void agregar_pokemon_a_lista(pokemon_t *pokemon, void *contexto) {
-    if(!pokemon || !contexto) {
-        return;
-    }
-    lista_t *lista_pokemon = (lista_t *)contexto;
-    lista_insertar(lista_pokemon, pokemon);
 }
 
 lista_t *juego_listar_pokemon(juego_t *juego) {
@@ -123,18 +133,14 @@ lista_t *juego_listar_pokemon(juego_t *juego) {
         return NULL;
     }
 
-    lista_t *lista_pokemon = lista_crear();
-    if (!lista_pokemon) {
-        return NULL;
-    }
-
-    con_cada_pokemon(juego->info_pokemon, agregar_pokemon_a_lista, lista_pokemon);
-
-    return lista_pokemon;
+    return juego->pokemones_totales;
 }
 
 void agregar_ataque_a_lista(const struct ataque *ataque, void *lista)
-{
+{   
+    if(!lista || !ataque) {
+        return;
+    }
     lista_insertar(lista, (void*) ataque);
 }
 
@@ -183,6 +189,9 @@ JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
 
 // Función para calcular la efectividad de un ataque y el puntaje simultáneamente
 int calcular_efectividad_y_puntaje(const struct ataque* ataque, pokemon_t* pokemon_atacado, resultado_jugada_t* resultado, juego_t* juego, jugador_t* jugador) {
+    if(!ataque || !pokemon_atacado  || !resultado || !juego || !jugador){
+        return 0;
+    }
     // Definir la matriz de efectividades localmente
     const float efectividades[6][6] = {
     // NORMAL, FUEGO, AGUA, PLANTA, ELECTRICO, ROCA
@@ -233,20 +242,31 @@ int calcular_efectividad_y_puntaje(const struct ataque* ataque, pokemon_t* pokem
 
 // Función comparadora para buscar un pokemon por nombre en la lista
 int comparador_buscar_pokemon(void *elemento, void *contexto) {
+    if(!elemento || !contexto){
+        return 0;
+    }
     const char *nombre_pokemon = (const char *)contexto;
     pokemon_t *pokemon = (pokemon_t *)elemento;
 
     return strcmp(pokemon_nombre(pokemon), nombre_pokemon);
 }
 
+
 bool comparador_buscar_ataque(void *elemento, void *contexto) {
+    if(!elemento || !contexto){
+        return false;
+    }
     const struct ataque *ataque = (const struct ataque *)elemento;
     const struct ataque *ataque_a_eliminar = (const struct ataque *)contexto;
 
     return ataque == ataque_a_eliminar;
 }
 
+
 int buscar_ataque(void* p1, void *p2){
+    if(!p1 || !p2){
+        return 0;
+    }
 	return p1==p2;
 }
 
@@ -258,9 +278,15 @@ bool ataque_ya_utilizado(jugador_t* jugador, const struct ataque* ataque) {
 	return lista_buscar_elemento(jugador->ataques_disponibles, buscar_ataque, (void*) ataque) == NULL;
 }
 
-// Actualiza la lista de ataques del pokemon después de utilizar un ataque
+//Actualiza la lista de ataques del pokemon después de utilizar un ataque
 void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque) {
+    if(!jugador || !ataque){
+        return;
+    }
     lista_iterador_t *iterador = lista_iterador_crear(jugador->ataques_disponibles);
+    if(iterador == NULL){
+        return;
+    }
     size_t posicion = 0;
 
     while (lista_iterador_tiene_siguiente(iterador)) {
@@ -275,6 +301,7 @@ void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque) 
 
     lista_iterador_destruir(iterador);
 }
+
 
 // función principal
 resultado_jugada_t juego_jugar_turno(juego_t *juego, jugada_t jugada_jugador1,
@@ -329,6 +356,8 @@ void juego_destruir(juego_t* juego) {
     if (juego) {
         jugador_destruir(juego->jugador_1);
         jugador_destruir(juego->jugador_2);
+        lista_destruir(juego->pokemones_totales);
+        pokemon_destruir_todo(juego->info_pokemon);
         free(juego);
     }
 }
