@@ -6,6 +6,7 @@
 #include "src/ataque.h"
 #include "src/juego.h"
 #include "src/lista.h"
+#include "src/adversario.h"
 
 #include "src/menu_comandos.h"
 #include "pa2m.h"
@@ -115,6 +116,21 @@ void se_puede_ejecutar_comandos() {
     menu_destruir(menu);
 }
 
+void se_puede_crear_adversario(){
+    juego_t* j = juego_crear();
+    juego_cargar_pokemon(j, ARCHIVO_OK);
+
+    adversario_t* adversario = adversario_crear(NULL);
+    pa2m_afirmar(adversario == NULL, "No se puede crear un adversario con una lista de pokemones NULL.");
+
+
+    adversario = adversario_crear(juego_listar_pokemon(j));
+    pa2m_afirmar(adversario != NULL, "Se puede crear un adversario.");
+
+
+	juego_destruir(j);
+}
+
 int main()
 {
 	pa2m_nuevo_grupo("============ Pruebas de creación de menu =================");
@@ -133,11 +149,10 @@ int main()
     se_puede_ejecutar_comandos();
 
 
-
     pa2m_nuevo_grupo("------------ PRUEBAS DEL TP1 ------------");
 
-	pa2m_nuevo_grupo("JUGAR");
-	jugar();
+    pa2m_nuevo_grupo("============ Pruebas de adversario =================");
+    se_puede_crear_adversario();
 
 	return pa2m_mostrar_reporte();
 }
