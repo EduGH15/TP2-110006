@@ -1,24 +1,17 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "juego.h"
 #include "lista.h"
 #include "tipo.h"
 #include "pokemon.h"
 #include "ataque.h"
-#include <string.h>
-#include <stdio.h>
-
-// Estructura para almacenar el contexto de búsqueda de un ataque
-struct contexto_buscar_ataque {
-    const struct ataque *ataque_a_eliminar;
-    size_t posicion_encontrada;
-    bool encontrado;
-};
-
+#include "abb.h"
 
 typedef struct {
     lista_t* pokemones;
-    lista_t* ataques_disponibles;
+    abb_t* ataques_disponibles;
     int puntaje;
 } jugador_t;
 
@@ -31,6 +24,28 @@ struct juego {
     bool finalizado;
 };
 
+/*======================================== FUNCIONES PRIVADAS =================================================*/
+
+// Definición de la función de comparación para cadenas
+int comparador_cadenas(void *elemento1, void *elemento2) {
+    const char *cadena1 = (const char *)elemento1;
+    const char *cadena2 = (const char *)elemento2;
+
+    return strcmp(cadena1, cadena2);
+}
+
+// Función para redondear hacia arriba
+int redondear_hacia_arriba(float numero) {
+    int entero = (int)numero; // Obtener la parte entera
+    if (numero > entero) {
+        // Si hay parte decimal, sumar 1 al entero
+        return entero + 1;
+    } else {
+        // Si no hay parte decimal, devolver el entero sin cambios
+        return entero;
+    }
+}
+
 // Función para crear un jugador con sus listas
 jugador_t* jugador_crear() {
     jugador_t* jugador = calloc(1, sizeof(jugador_t));
@@ -39,11 +54,11 @@ jugador_t* jugador_crear() {
     }
 
     jugador->pokemones = lista_crear();
-    jugador->ataques_disponibles = lista_crear();
+    jugador->ataques_disponibles = abb_crear(comparador_cadenas);
 
     if (!jugador->pokemones || !jugador->ataques_disponibles) {
         lista_destruir(jugador->pokemones);
-        lista_destruir(jugador->ataques_disponibles);
+        abb_destruir(jugador->ataques_disponibles);
         free(jugador);
         return NULL;
     }
@@ -57,10 +72,120 @@ jugador_t* jugador_crear() {
 void jugador_destruir(jugador_t* jugador) {
     if (jugador) {
         lista_destruir(jugador->pokemones);
-        lista_destruir(jugador->ataques_disponibles);
+        abb_destruir(jugador->ataques_disponibles);
         free(jugador);
     }
 }
+
+// Función auxiliar para agregar pokemon a la lista
+void agregar_pokemon_a_lista(pokemon_t *pokemon, void *contexto) {
+    if(!pokemon || !contexto) {
+        return;
+    }
+    lista_t *lista_pokemon = (lista_t *)contexto;
+    lista_insertar(lista_pokemon, pokemon);
+}
+
+void agregar_ataque_a_lista(const struct ataque *ataque, void *abb)
+{   
+    if(!abb || !ataque) {
+        return;
+    }
+    abb_insertar(abb, (void*) ataque);
+}
+
+//Funcion auxiliar para agregar pokemones a la lista de pokemones del jugador
+void agregar_pokemon_a_jugador(jugador_t *jugador, pokemon_t *pokemon1, pokemon_t *pokemon2, pokemon_t *pokemon3) 
+{
+    if(!jugador){
+        return;
+    }
+    if(pokemon1) lista_insertar(jugador->pokemones, pokemon1);
+    if(pokemon2) lista_insertar(jugador->pokemones, pokemon2);
+    if(pokemon3) lista_insertar(jugador->pokemones, pokemon3);
+
+    con_cada_ataque(pokemon1, agregar_ataque_a_lista, jugador->ataques_disponibles);
+    con_cada_ataque(pokemon2, agregar_ataque_a_lista, jugador->ataques_disponibles);
+    con_cada_ataque(pokemon3, agregar_ataque_a_lista, jugador->ataques_disponibles);
+
+
+}
+
+// Función para calcular la efectividad de un ataque y el puntaje simultáneamente
+int calcular_efectividad_y_puntaje(const struct ataque* ataque, pokemon_t* pokemon_atacado, resultado_jugada_t* resultado, juego_t* juego, jugador_t* jugador) {
+    if(!ataque || !pokemon_atacado  || !resultado || !juego || !jugador){
+        return 0;
+    }
+    // Definir la matriz de efectividades localmente
+    const float efectividades[6][6] = {
+    // NORMAL, FUEGO, AGUA, PLANTA, ELECTRICO, ROCA
+        {1.0, 1.0, 1.0, 1.0, 1.0, 1.0},            // ATAQUE_NORMAL
+        {1.0, 1.0, 0.5, 3.0, 1.0, 1.0},            // ATAQUE_FUEGO
+        {1.0, 3.0, 1.0, 1.0, 0.5, 1.0},            // ATAQUE_AGUA
+        {1.0, 0.5, 1.0, 1.0, 1.0, 3.0},            // ATAQUE_PLANTA
+        {1.0, 1.0, 3.0, 1.0, 1.0, 0.5},            // ATAQUE_ELECTRICO
+        {1.0, 1.0, 1.0, 0.5, 3.0, 1.0}             // ATAQUE_ROCA
+    };
+
+    enum TIPO tipo_ataque = ataque->tipo;
+    enum TIPO tipo_pokemon_atacado = pokemon_tipo(pokemon_atacado);
+
+    int poder = (int)ataque->poder;
+    float efectividad = efectividades[tipo_ataque][tipo_pokemon_atacado];    
+
+    if (efectividad == 1.0) {
+        if(jugador == juego->jugador_1){
+            resultado->jugador1 = ATAQUE_REGULAR;
+        }else{
+            resultado->jugador2 = ATAQUE_REGULAR;
+        }
+    } else if (efectividad > 1.0) {
+        if(jugador == juego->jugador_1){
+            resultado->jugador1 = ATAQUE_EFECTIVO;
+        }else{
+            resultado->jugador2 = ATAQUE_EFECTIVO;
+        }
+    } else if (efectividad < 1.0) {
+        if(jugador == juego->jugador_1){
+            resultado->jugador1 = ATAQUE_INEFECTIVO;
+        }else{
+            resultado->jugador2 = ATAQUE_INEFECTIVO;
+        }
+    }
+
+    float res = (float)poder * efectividad; 
+    return redondear_hacia_arriba(res);
+}
+
+// Función comparadora para buscar un pokemon por nombre en la lista
+int comparador_buscar_pokemon(void *elemento, void *contexto) {
+    if(!elemento || !contexto){
+        return 0;
+    }
+    const char *nombre_pokemon = (const char *)contexto;
+    pokemon_t *pokemon = (pokemon_t *)elemento;
+
+    return strcmp(pokemon_nombre(pokemon), nombre_pokemon);
+}
+
+bool ataque_ya_utilizado(jugador_t* jugador, const struct ataque* ataque) {
+    if(!jugador || !ataque){
+        return false;
+    } 
+	return abb_buscar(jugador->ataques_disponibles, (void*) ataque) == NULL;
+}
+
+// Función para eliminar un ataque utilizado del ABB de ataques
+void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque) {
+    if (!jugador || !ataque) {
+        return;
+    }
+
+    const char *nombre_ataque_a_eliminar = ataque->nombre;
+    abb_quitar(jugador->ataques_disponibles, (void *)nombre_ataque_a_eliminar);
+}
+
+/*======================================= FUNCIONES PRINCIPALES ==============================================================*/
 
 // Función para crear un juego con jugadores
 juego_t* juego_crear() {
@@ -78,6 +203,7 @@ juego_t* juego_crear() {
         free(juego);
         return NULL;
     }
+
     juego->pokemones_totales = lista_crear();
     if(!juego->pokemones_totales){
         jugador_destruir(juego->jugador_1);
@@ -89,15 +215,6 @@ juego_t* juego_crear() {
     juego->finalizado = false;
 
     return juego;
-}
-
-// Función auxiliar para agregar pokemon a la lista
-void agregar_pokemon_a_lista(pokemon_t *pokemon, void *contexto) {
-    if(!pokemon || !contexto) {
-        return;
-    }
-    lista_t *lista_pokemon = (lista_t *)contexto;
-    lista_insertar(lista_pokemon, pokemon);
 }
 
 JUEGO_ESTADO juego_cargar_pokemon(juego_t *juego, char *archivo) {
@@ -117,7 +234,6 @@ JUEGO_ESTADO juego_cargar_pokemon(juego_t *juego, char *archivo) {
 
     juego->info_pokemon = info_pokemon;
     con_cada_pokemon(juego->info_pokemon, agregar_pokemon_a_lista, juego->pokemones_totales);
-
     return TODO_OK;
 }
 
@@ -144,29 +260,6 @@ lista_t *juego_listar_pokemon(juego_t *juego) {
     return juego->pokemones_totales;
 }
 
-void agregar_ataque_a_lista(const struct ataque *ataque, void *lista)
-{   
-    if(!lista || !ataque) {
-        return;
-    }
-    lista_insertar(lista, (void*) ataque);
-}
-
-//Funcion auxiliar para agregar pokemones a la lista de pokemones del jugador
-void agregar_pokemon_a_jugador(jugador_t *jugador, pokemon_t *pokemon1, pokemon_t *pokemon2, pokemon_t *pokemon3) 
-{
-    if(!jugador || !pokemon1 || !pokemon2 || !pokemon3){
-        return;
-    }
-
-    lista_insertar(jugador->pokemones, pokemon1);
-    lista_insertar(jugador->pokemones, pokemon2);
-    lista_insertar(jugador->pokemones, pokemon3);
-
-    con_cada_ataque(pokemon1, agregar_ataque_a_lista, jugador->ataques_disponibles);
-
-}
-
 JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
                                        const char *nombre1, const char *nombre2,
                                        const char *nombre3) {
@@ -187,138 +280,15 @@ JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
     }
 
     if(jugador == JUGADOR1){
-        agregar_pokemon_a_jugador(juego->jugador_1, pokemon1, pokemon2, pokemon3);
+        agregar_pokemon_a_jugador(juego->jugador_1, pokemon1, pokemon2, NULL);
+        agregar_pokemon_a_jugador(juego->jugador_2, NULL, NULL, pokemon3);
     }else{
-        agregar_pokemon_a_jugador(juego->jugador_2, pokemon1, pokemon2, pokemon3);
-
+        agregar_pokemon_a_jugador(juego->jugador_1, NULL, NULL, pokemon3);
+        agregar_pokemon_a_jugador(juego->jugador_2, pokemon1, pokemon2, NULL);
     }
     return TODO_OK;
 }
 
-// Función para calcular la efectividad de un ataque y el puntaje simultáneamente
-int calcular_efectividad_y_puntaje(const struct ataque* ataque, pokemon_t* pokemon_atacado, resultado_jugada_t* resultado, juego_t* juego, jugador_t* jugador) {
-    if(!ataque || !pokemon_atacado  || !resultado || !juego || !jugador){
-        return 0;
-    }
-    // Definir la matriz de efectividades localmente
-    const float efectividades[6][6] = {
-    // NORMAL, FUEGO, AGUA, PLANTA, ELECTRICO, ROCA
-        {1, 1, 1, 1, 1, 1},                 // NORMAL
-        {1, 1, 0.5, 3, 1, 1},               // FUEGO
-        {1, 3, 1, 1, 0.5, 1},               // AGUA
-        {1, 0.5, 1, 1, 1, 3},               // PLANTA
-        {1, 1, 3, 1, 1, 0.5},               // ELECTRICO
-        {1, 1, 1, 0.5, 3, 1}                // ROCA
-};
-
-
-    enum TIPO tipo_ataque = ataque->tipo;
-    enum TIPO tipo_pokemon_atacado = pokemon_tipo(pokemon_atacado);
-
-    int poder = (int)ataque->poder;
-    float efectividad = efectividades[tipo_ataque][tipo_pokemon_atacado];    
-
-    if (efectividad == 1) {
-        if(jugador == juego->jugador_1){
-            resultado->jugador1 = ATAQUE_REGULAR;
-        }else{
-            resultado->jugador2 = ATAQUE_REGULAR;
-        }
-    } else if (efectividad > 1) {
-        if(jugador == juego->jugador_1){
-            resultado->jugador1 = ATAQUE_EFECTIVO;
-        }else{
-            resultado->jugador2 = ATAQUE_EFECTIVO;
-        }
-    } else if (efectividad < 1) {
-        if(jugador == juego->jugador_1){
-            resultado->jugador1 = ATAQUE_INEFECTIVO;
-        }else{
-            resultado->jugador2 = ATAQUE_INEFECTIVO;
-        }
-    } else {
-        if(jugador == juego->jugador_1){
-            resultado->jugador1 = ATAQUE_ERROR;
-        }else{
-            resultado->jugador2 = ATAQUE_ERROR;
-        }
-        return 0;  // Retorna 0 en caso de error
-    }
-
-    return poder * (int)(efectividad);
-}
-
-// Función comparadora para buscar un pokemon por nombre en la lista
-int comparador_buscar_pokemon(void *elemento, void *contexto) {
-    if(!elemento || !contexto){
-        return 0;
-    }
-    const char *nombre_pokemon = (const char *)contexto;
-    pokemon_t *pokemon = (pokemon_t *)elemento;
-
-    return strcmp(pokemon_nombre(pokemon), nombre_pokemon);
-}
-
-
-bool comparador_buscar_ataque(void *elemento, void *contexto) {
-    if (!elemento || !contexto) {
-        return false;
-    }
-
-    const struct ataque *ataque = (const struct ataque *)elemento;
-    const char *nombre_a_eliminar = (const char *)contexto;
-
-    // Comparar el nombre del ataque
-    return strcmp(ataque->nombre, nombre_a_eliminar) == 0;
-}
-
-
-
-int buscar_ataque(void* p1, void *p2){
-    if(!p1 || !p2){
-        return 0;
-    }
-	return p1==p2;
-}
-
-bool ataque_ya_utilizado(jugador_t* jugador, const struct ataque* ataque) {
-
-    if(!jugador || !ataque){
-        return false;
-    } 
-	return lista_buscar_elemento(jugador->ataques_disponibles, buscar_ataque, (void*) ataque) == NULL;
-}
-
-// Actualiza la lista de ataques del pokemon después de utilizar un ataque
-void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque) {
-    if (!jugador || !ataque) {
-        return;
-    }
-
-    const char *nombre_ataque_a_eliminar = ataque->nombre;
-
-    lista_iterador_t *iterador = lista_iterador_crear(jugador->ataques_disponibles);
-    if (iterador == NULL) {
-        return;
-    }
-
-    size_t posicion = 0;
-
-    while (lista_iterador_tiene_siguiente(iterador)) {
-        void *elemento_actual = lista_iterador_elemento_actual(iterador);
-        if (comparador_buscar_ataque(elemento_actual, (void *)nombre_ataque_a_eliminar)) {
-            lista_quitar_de_posicion(jugador->ataques_disponibles, posicion);
-            break;
-        }
-        lista_iterador_avanzar(iterador);
-        posicion++;
-    }
-
-    lista_iterador_destruir(iterador);
-}
-
-
-// función principal
 resultado_jugada_t juego_jugar_turno(juego_t *juego, jugada_t jugada_jugador1,
                                      jugada_t jugada_jugador2) {
 
@@ -333,7 +303,7 @@ resultado_jugada_t juego_jugar_turno(juego_t *juego, jugada_t jugada_jugador1,
     pokemon_t *pokemon_jugador1 = lista_buscar_elemento(juego->jugador_1->pokemones, comparador_buscar_pokemon, jugada_jugador1.pokemon);
     pokemon_t *pokemon_jugador2 = lista_buscar_elemento(juego->jugador_2->pokemones, comparador_buscar_pokemon, jugada_jugador2.pokemon);
 
-    if (!pokemon_jugador1 || !pokemon_jugador2) {
+    if (!pokemon_jugador1 || !pokemon_jugador2){
         return resultado_ataque;
     }
     
@@ -366,7 +336,6 @@ resultado_jugada_t juego_jugar_turno(juego_t *juego, jugada_t jugada_jugador1,
     return resultado_ataque;
 }
 
-// Función para destruir un juego y sus jugadores
 void juego_destruir(juego_t* juego) {
     if (juego) {
         jugador_destruir(juego->jugador_1);

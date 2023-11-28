@@ -8,7 +8,7 @@ valgrind-chanutron: pruebas_chanutron
 	valgrind $(VALGRIND_FLAGS) ./pruebas_chanutron
 
 pruebas_chanutron: src/*.c pruebas_chanutron.c
-	$(CC) $(CFLAGS) src/*.c pruebas_chanutron.c -o pruebas_chanutron
+	$(CC) $(CFLAGS) src/*.c pruebas_chanutron.c -o pruebas_chanutron -lm
 
 valgrind-main: main
 	valgrind $(VALGRIND_FLAGS) ./main
