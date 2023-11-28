@@ -48,7 +48,7 @@ void *abb_quitar(abb_t *arbol, void *elemento);
  * Busca en el arbol un elemento igual al provisto (utilizando la
  * funcion de comparación).
  *
- * Devuelve el elemento encontrado o NULL si no lo encuentra.
+ * 	Devuelve el elemento encontrado o NULL si no lo encuentra.
  */
 void *abb_buscar(abb_t *arbol, void *elemento);
 

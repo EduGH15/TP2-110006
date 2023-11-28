@@ -55,7 +55,7 @@ void agregar_pokemon_a_lista(pokemon_t *pokemon, void *contexto) {
     lista_insertar(lista_pokemon, pokemon);
 }
 
-void agregar_ataque_a_lista(const struct ataque *ataque, void *abb)
+void agregar_ataque_a_abb(const struct ataque *ataque, void *abb)
 {   
     if(!abb || !ataque) {
         return;
@@ -72,11 +72,9 @@ void agregar_pokemon_a_jugador(jugador_t *jugador, pokemon_t *pokemon1, pokemon_
     if(pokemon2) lista_insertar(jugador->pokemones, pokemon2);
     if(pokemon3) lista_insertar(jugador->pokemones, pokemon3);
 
-    con_cada_ataque(pokemon1, agregar_ataque_a_lista, jugador->ataques_disponibles);
-    con_cada_ataque(pokemon2, agregar_ataque_a_lista, jugador->ataques_disponibles);
-    con_cada_ataque(pokemon3, agregar_ataque_a_lista, jugador->ataques_disponibles);
-
-
+    con_cada_ataque(pokemon1, agregar_ataque_a_abb, jugador->ataques_disponibles);
+    con_cada_ataque(pokemon2, agregar_ataque_a_abb, jugador->ataques_disponibles);
+    con_cada_ataque(pokemon3, agregar_ataque_a_abb, jugador->ataques_disponibles);
 }
 
 int calcular_efectividad_y_puntaje(const struct ataque* ataque, pokemon_t* pokemon_atacado, resultado_jugada_t* resultado, juego_t* juego, jugador_t* jugador) {
@@ -148,4 +146,19 @@ void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque) 
 
     const char *nombre_ataque_a_eliminar = ataque->nombre;
     abb_quitar(jugador->ataques_disponibles, (void *)nombre_ataque_a_eliminar);
+}
+
+bool hay_ataque(void *elemento, void *aux) {
+    struct ataque *ataque_abb = (struct ataque *)elemento;
+    struct ataque *auxiliar = (struct ataque *)aux;
+
+    if (!auxiliar) {
+        strncpy(auxiliar->nombre, ataque_abb->nombre, sizeof(auxiliar->nombre) - 1);
+        auxiliar->nombre[sizeof(auxiliar->nombre) - 1] = '\0';
+        auxiliar->poder = ataque_abb->poder;
+        auxiliar->tipo = ataque_abb->tipo;
+        return true;
+    }
+
+    return false;
 }

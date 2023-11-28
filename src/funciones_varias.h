@@ -40,7 +40,7 @@ void jugador_destruir(jugador_t* jugador);
 // Función auxiliar para agregar pokemon a la lista
 void agregar_pokemon_a_lista(pokemon_t *pokemon, void *contexto);
 
-void agregar_ataque_a_lista(const struct ataque *ataque, void *abb);
+void agregar_ataque_a_abb(const struct ataque *ataque, void *abb);
 
 //Funcion auxiliar para agregar pokemones a la lista de pokemones del jugador
 void agregar_pokemon_a_jugador(jugador_t *jugador, pokemon_t *pokemon1, pokemon_t *pokemon2, pokemon_t *pokemon3);
@@ -55,5 +55,8 @@ bool ataque_ya_utilizado(jugador_t* jugador, const struct ataque* ataque);
 
 // Función para eliminar un ataque utilizado del ABB de ataques
 void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque);
+
+bool hay_ataque(void *elemento, void *aux);
+
 
 #endif // FUNCIONES_VARIAS_H_

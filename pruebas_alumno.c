@@ -123,12 +123,12 @@ void se_puede_crear_adversario(){
     adversario_t* adversario = adversario_crear(NULL);
     pa2m_afirmar(adversario == NULL, "No se puede crear un adversario con una lista de pokemones NULL.");
 
-
     adversario = adversario_crear(juego_listar_pokemon(j));
     pa2m_afirmar(adversario != NULL, "Se puede crear un adversario.");
 
 
 	juego_destruir(j);
+    adversario_destruir(adversario);
 }
 
 int main()
