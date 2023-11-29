@@ -151,7 +151,7 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
         return j;
     }
 
-    // Obtener el primer ataque del abb
+    //Obtener el ultimo elemento inorden del abb
     struct ataque *ataque;
     abb_con_cada_elemento(adversario->ataques_disponibles, INORDEN, hay_ataque, &ataque);
 
