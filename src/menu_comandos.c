@@ -1,10 +1,17 @@
 #include "menu_comandos.h"
 
+/*
+Pre:  Recibe un puntero a una cadena de caracteres no nula (nombre), un puntero a una cadena de caracteres no nula
+      (instruccion), un puntero a una cadena de caracteres no nula (descripcion), y un puntero a una función booleana
+      (funcion). Todos los punteros deben ser válidos.
+Post: Devuelve un puntero a una estructura de tipo comando_t correctamente inicializada con los datos proporcionados.
+      Si hay algún error en la asignación de memoria o algún puntero es nulo, devuelve NULL.
+*/
 comando_t *comando_crear(const char *nombre, const char *instruccion,
 			 const char *descripcion,
 			 bool (*funcion)(void *, void *))
 {
-	if (nombre == NULL || instruccion == NULL || descripcion == NULL || funcion == NULL){
+	if (!nombre || !instruccion || !descripcion || !funcion){
 		return NULL;
 	}
 
@@ -22,11 +29,11 @@ comando_t *comando_crear(const char *nombre, const char *instruccion,
 
 menu_t *menu_crear(){
     menu_t *menu = calloc(1, sizeof(menu_t));
-	if(menu == NULL){
+	if(!menu){
 		return NULL;
 	}
 	menu->comandos = hash_crear(10);
-	if(menu->comandos == NULL){
+	if(!menu->comandos){
 		free(menu);
 		return NULL;
 	}
@@ -37,7 +44,7 @@ menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 			     const char *instruccion, const char *descripcion,
 			     bool (*funcion)(void *, void *), void *contexto)
 {
-	if(menu == NULL || nombre == NULL || instruccion == NULL || descripcion == NULL || funcion == NULL || hash_contiene(menu->comandos, instruccion) == true){
+	if(!menu || !nombre || !instruccion || !descripcion || !funcion || hash_contiene(menu->comandos, instruccion) == true){
 		return NULL;
 	}
 
@@ -58,7 +65,7 @@ menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 
 menu_t *menu_eliminar_comando(menu_t *menu, const char *instruccion)
 {
-	if (menu == NULL || instruccion == NULL || hash_contiene(menu->comandos, instruccion) == false)
+	if (!menu || !instruccion || hash_contiene(menu->comandos, instruccion) == false)
     {
         return NULL;
     }

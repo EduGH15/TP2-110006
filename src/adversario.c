@@ -1,11 +1,17 @@
 #include <time.h>
 #include <string.h>
+#include <stdlib.h>
 #include "lista.h"
 #include "juego.h"
 #include "adversario.h"
 #include "pokemon.h"
 #include "abb.h"
 #include "funciones_varias.h"
+
+struct ContextoIterador {
+    size_t contador;
+    struct ataque* ataque_aleatorio;
+};
 
 struct adversario {
     lista_t* pokemon;
@@ -15,6 +21,49 @@ struct adversario {
 	abb_t* ataques_jugador;
 
 };
+
+/*
+Pre:  Recibe un puntero a un elemento (elemento) y un puntero a un contexto (contexto).
+      El contexto debe ser una estructura de tipo struct ContextoIterador con al menos
+      un campo llamado contador de tipo size_t y un campo llamado ataque_aleatorio de tipo
+      struct ataque*.
+Post: Disminuye el valor del campo contador en el contexto en 1. Si el valor del campo contador
+      en el contexto llega a 0, asigna el puntero al elemento (casteado a struct ataque*) al
+      campo ataque_aleatorio en el contexto y devuelve false. En caso contrario, devuelve true.
+*/
+bool obtener_ataque_aleatorio(void* elemento, void* contexto) {
+    struct ContextoIterador* ctx = (struct ContextoIterador*)contexto;
+
+    ctx->contador--;
+    if (ctx->contador == 0) {
+        ctx->ataque_aleatorio = (struct ataque*)elemento;
+        return false;
+    }
+    return true;
+}
+
+/*
+Pre:  Recibe un puntero a una estructura de tipo abb_t (abb). Se asume que el abb ha sido 
+      creado y contiene elementos válidos.
+Post: Devuelve un puntero a una estructura de tipo struct ataque que representa un ataque
+      aleatorio dentro del abb proporcionado. Si el abb es nulo o está vacío, devuelve NULL.
+      El ataque aleatorio se selecciona utilizando un contador aleatorio y un iterador interno.
+*/
+struct ataque* obtener_ataque_aleatorio_en_abb(abb_t* abb) {
+    if (!abb || abb_vacio(abb)) {
+        return NULL;
+    }
+
+    size_t cantidad_elementos = abb_tamanio(abb);
+
+    size_t contador_aleatorio = (size_t)(rand() % (int)cantidad_elementos);
+
+    struct ContextoIterador ctx = { .contador = contador_aleatorio, .ataque_aleatorio = NULL };
+
+    abb_con_cada_elemento(abb, INORDEN, obtener_ataque_aleatorio, &ctx);
+
+    return ctx.ataque_aleatorio;
+}
 
 adversario_t *adversario_crear(lista_t *pokemon)
 {
@@ -105,22 +154,18 @@ bool adversario_pokemon_seleccionado(adversario_t *adversario, char *nombre1,
         return false;
     }
 
-    // Buscar los pokémon por nombre en la información disponible
     pokemon_t *pokemon1 = lista_buscar_elemento(adversario->pokemon, comparador_buscar_pokemon, nombre1);
     pokemon_t *pokemon2 = lista_buscar_elemento(adversario->pokemon, comparador_buscar_pokemon, nombre2);
     pokemon_t *pokemon3 = lista_buscar_elemento(adversario->pokemon, comparador_buscar_pokemon, nombre3);
 
-    // Verificar que se encontraron los pokémon
     if (!pokemon1 || !pokemon2 || !pokemon3) {
         return false;
     }
 
-    // Verificar que los nombres no se repiten
     if (strcmp(nombre1, nombre2) == 0 || strcmp(nombre1, nombre3) == 0 || strcmp(nombre2, nombre3) == 0) {
         return false;
     }
 
-    // Modificar los pokémon del adversario
     lista_insertar(adversario->pokemones_jugador,pokemon1);
     lista_insertar(adversario->pokemones_jugador, pokemon2);
     lista_insertar(adversario->pokemones_disponibles, pokemon3);
@@ -137,34 +182,26 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
 {	
     jugada_t j = { .ataque = "", .pokemon = "" };
 
-    // Verificar que hay pokemones disponibles para el jugador
     if (lista_vacia(adversario->pokemones_disponibles)) {
         return j;
     }
 
-    // Obtener un pokemon aleatorio de la lista de pokemones disponibles
     int indice_pokemon = rand() % (int)lista_tamanio(adversario->pokemones_disponibles);
     pokemon_t *pokemon = lista_elemento_en_posicion(adversario->pokemones_disponibles, (size_t)indice_pokemon);
 
-    // Verificar que hay ataques disponibles para el jugador
     if (!pokemon || abb_vacio(adversario->ataques_disponibles)) {
         return j;
     }
 
-    //Obtener el ultimo elemento inorden del abb
-    struct ataque *ataque;
-    abb_con_cada_elemento(adversario->ataques_disponibles, INORDEN, hay_ataque, &ataque);
+    struct ataque *ataque = obtener_ataque_aleatorio_en_abb(adversario->ataques_disponibles);
 
-    // Verificar si el ataque ya fue utilizado
     if (ataque_ya_utilizado((jugador_t*)adversario, ataque)) {
         return j;
     }
 
-    // Realizar la jugada
     strcpy(j.pokemon, pokemon_nombre(pokemon));
 	strcpy(j.ataque, ataque->nombre);
 
-    // Marcar el ataque como utilizado
     eliminar_ataque_utilizado((jugador_t*)adversario, ataque);
 
     return j;

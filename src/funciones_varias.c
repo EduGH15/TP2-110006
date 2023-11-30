@@ -3,17 +3,14 @@
 int comparador_cadenas(void *elemento1, void *elemento2) {
     const char *cadena1 = (const char *)elemento1;
     const char *cadena2 = (const char *)elemento2;
-
     return strcmp(cadena1, cadena2);
 }
 
 int redondear_hacia_arriba(float numero) {
-    int entero = (int)numero; // Obtener la parte entera
+    int entero = (int)numero; 
     if (numero > entero) {
-        // Si hay parte decimal, sumar 1 al entero
         return entero + 1;
     } else {
-        // Si no hay parte decimal, devolver el entero sin cambios
         return entero;
     }
 }

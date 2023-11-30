@@ -10,7 +10,6 @@
 #include "abb.h"
 #include "funciones_varias.h"
 
-// Función para crear un juego con jugadores
 juego_t* juego_crear() {
     juego_t* juego = calloc(1, sizeof(juego_t));
     if (!juego) {
@@ -76,7 +75,7 @@ bool juego_finalizado(juego_t *juego) {
 }
 
 lista_t *juego_listar_pokemon(juego_t *juego) {
-    if (!juego || !juego->info_pokemon) {
+    if (!juego) {
         return NULL;
     }
 
