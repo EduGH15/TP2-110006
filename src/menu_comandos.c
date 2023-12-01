@@ -9,7 +9,7 @@ Post: Devuelve un puntero a una estructura de tipo comando_t correctamente inici
 */
 comando_t *comando_crear(const char *nombre, const char *instruccion,
 			 const char *descripcion,
-			 bool (*funcion)(void *, void* contexto), void* contexto)
+			 COMANDO_ESTADO (*funcion)(void *, void* contexto), void* contexto)
 {
 	if (!nombre || !instruccion || !descripcion || !funcion){
 		return NULL;
@@ -43,24 +43,24 @@ menu_t *menu_crear(){
 
 menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 			     const char *instruccion, const char *descripcion,
-			     bool (*funcion)(void *, void *), void* contexto)
+			     COMANDO_ESTADO (*funcion)(void *, void *), void* contexto)
 {
-	if(!menu || !nombre || !instruccion || !descripcion || !funcion || hash_contiene(menu->comandos, instruccion) == true){
+	if(!menu || !nombre || !instruccion || !descripcion || !funcion){
 		return NULL;
 	}
 
     comando_t *comando = comando_crear(nombre, instruccion, descripcion, funcion, contexto);
     if (comando == NULL)
-    {
+    {	
         return NULL;
     }
 
-    void *anterior;
-    if (hash_insertar(menu->comandos, instruccion, comando, &anterior) == NULL)
+    if (hash_insertar(menu->comandos, instruccion, comando, NULL) == NULL)
     {
         free(comando);
         return NULL;
     }
+
     return menu;
 }
 
@@ -77,17 +77,18 @@ menu_t *menu_eliminar_comando(menu_t *menu, const char *instruccion)
     return menu;
 }
 
-menu_t *menu_ejecutar_comando(menu_t *menu, const char *instruccion){
+COMANDO_ESTADO menu_ejecutar_comando(menu_t *menu, const char *instruccion){
 	if(menu == NULL || instruccion == NULL){
-        return NULL;
+        return COMANDO_INEXISTENTE;
     }
 
     comando_t *comando = hash_obtener(menu->comandos, instruccion);
-    if(comando == NULL || comando->funcion(menu, comando->contexto) == false){
-        return NULL;
+    if(comando == NULL){
+        return COMANDO_INEXISTENTE;
     }
 
-    return menu;
+    return comando->funcion(menu, comando->contexto);
+
 }
 
 bool menu_contiene_comando(menu_t *menu, const char *instruccion){

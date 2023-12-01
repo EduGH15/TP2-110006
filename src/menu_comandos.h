@@ -9,12 +9,25 @@
 
 #define ERROR -1
 
+typedef enum {
+	ERROR_CARGAR,
+	COMANDO_INEXISTENTE,
+      ARCHIVO_INEXISTENTE,
+      CARGA_EXITOSA,
+      ESTADO_OK,
+      ESTADO_ERROR,
+      POKES_INSUFICIENTES,
+      POKES_REPETIDOS,
+      POKES_INEXISTENTES,
+      CARGA_POKES_EXITOSA
+} COMANDO_ESTADO;
+
 typedef struct comando {
 	const char* nombre;
 	const char* instruccion;
-    const char* descripcion;
-	bool (*funcion)(void *, void *);
-	void*contexto;
+      const char* descripcion;
+	COMANDO_ESTADO (*funcion)(void *, void *);
+	void* contexto;
 } comando_t;
 
 typedef struct menu {
@@ -39,7 +52,7 @@ Post: Agrega un nuevo comando al menú con la información proporcionada. Devuel
 */
 menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 			     const char *instruccion, const char *descripcion,
-			     bool (*funcion)(void *, void *), void *contexto);
+			     COMANDO_ESTADO (*funcion)(void *, void *), void* contexto);
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo menu_t (menu) y una cadena de caracteres no nula (instruccion).
@@ -61,7 +74,7 @@ Post: Ejecuta la función asociada a la instrucción dada en el menú, pasando c
       Si hay algún error (puntero nulo, la instrucción no existe en el menú o la ejecución de la función falla),
       devuelve NULL.
 */
-menu_t *menu_ejecutar_comando(menu_t *menu, const char *instruccion);
+COMANDO_ESTADO menu_ejecutar_comando(menu_t *menu, const char *instruccion);
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo menu_t (menu) y una cadena de caracteres no nula (instruccion).

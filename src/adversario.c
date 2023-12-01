@@ -8,11 +8,6 @@
 #include "abb.h"
 #include "funciones_varias.h"
 
-// struct ContextoIterador {
-//     size_t contador;
-//     struct ataque* ataque_aleatorio;
-// };
-
 typedef struct datos{
     char* nombres[3];
     size_t cantidad_nombres;
@@ -28,48 +23,6 @@ struct adversario {
     size_t cantidad_jugadas;
 };
 
-/*
-Pre:  Recibe un puntero a un elemento (elemento) y un puntero a un contexto (contexto).
-      El contexto debe ser una estructura de tipo struct ContextoIterador con al menos
-      un campo llamado contador de tipo size_t y un campo llamado ataque_aleatorio de tipo
-      struct ataque*.
-Post: Disminuye el valor del campo contador en el contexto en 1. Si el valor del campo contador
-      en el contexto llega a 0, asigna el puntero al elemento (casteado a struct ataque*) al
-      campo ataque_aleatorio en el contexto y devuelve false. En caso contrario, devuelve true.
-*/
-// bool obtener_ataque_aleatorio(void* elemento, void* contexto) {
-//     struct ContextoIterador* ctx = (struct ContextoIterador*)contexto;
-
-//     ctx->contador--;
-//     if (ctx->contador == 0) {
-//         ctx->ataque_aleatorio = (struct ataque*)elemento;
-//         return false;
-//     }
-//     return true;
-// }
-
-/*
-Pre:  Recibe un puntero a una estructura de tipo abb_t (abb). Se asume que el abb ha sido 
-      creado y contiene elementos válidos.
-Post: Devuelve un puntero a una estructura de tipo struct ataque que representa un ataque
-      aleatorio dentro del abb proporcionado. Si el abb es nulo o está vacío, devuelve NULL.
-      El ataque aleatorio se selecciona utilizando un contador aleatorio y un iterador interno.
-*/
-// struct ataque* obtener_ataque_aleatorio_en_abb(abb_t* abb) {
-//     if (!abb || abb_vacio(abb)) {
-//         return NULL;
-//     }
-
-//     size_t cantidad_elementos = abb_tamanio(abb);
-
-//     size_t contador_aleatorio = (size_t)(rand() % (int)cantidad_elementos) + 0;
-
-//     struct ContextoIterador ctx = { .contador = contador_aleatorio, .ataque_aleatorio = NULL };
-
-//     abb_con_cada_elemento(abb, INORDEN, obtener_ataque_aleatorio, &ctx);
-
-//     return ctx.ataque_aleatorio;
-// }
 
 bool guardar_nombres(void* pokemon, void* datos){
     pokemon_t* pokemon_nuevo = pokemon;
@@ -84,8 +37,8 @@ bool guardar_nombres(void* pokemon, void* datos){
 void agregar_ataque_a_vector(const struct ataque* ataque, void* adversario){
     adversario_t* adversario_nuevo = adversario;
     strcpy(adversario_nuevo->posibles_jugadas[adversario_nuevo->cantidad_jugadas].ataque,ataque->nombre);
-    printf("El ataque del pokemon adversario es:\n");
-    printf("%s\n", adversario_nuevo->posibles_jugadas[adversario_nuevo->cantidad_jugadas].ataque);
+    // printf("El ataque del pokemon adversario es:\n");
+    // printf("%s\n", adversario_nuevo->posibles_jugadas[adversario_nuevo->cantidad_jugadas].ataque);
     adversario_nuevo->cantidad_jugadas++;
 }
 
@@ -135,21 +88,6 @@ bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
         return false;
     }
 
-	// int indice_pokemon1 = rand() % cantidad_pokemon;
-// 	int indice_pokemon2;
-// 	int indice_pokemon3;
-
-// seleccionar_pokemon2:
-	// indice_pokemon2 = rand() % cantidad_pokemon;
-// 	if (indice_pokemon2 == indice_pokemon1) {
-//     	goto seleccionar_pokemon2;
-// 	}
-
-// seleccionar_pokemon3:
-	// indice_pokemon3 = rand() % cantidad_pokemon;
-// 	if (indice_pokemon3 == indice_pokemon1 || indice_pokemon3 == indice_pokemon2) {
-// 	 	goto seleccionar_pokemon3;
-// 	}
     int indice_pokemon1 = rand() % cantidad_pokemon;
     int indice_pokemon2 = rand() % cantidad_pokemon;
 	int indice_pokemon3 = rand() % cantidad_pokemon;
@@ -159,9 +97,9 @@ bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
         indice_pokemon1 = rand() % cantidad_pokemon;
         indice_pokemon1 = rand() % cantidad_pokemon;
     }
-    printf("indice1: %i\n", indice_pokemon1);
-    printf("indice2: %i\n", indice_pokemon2);
-    printf("indice2: %i\n", indice_pokemon3);
+    // printf("indice1: %i\n", indice_pokemon1);
+    // printf("indice2: %i\n", indice_pokemon2);
+    // printf("indice2: %i\n", indice_pokemon3);
 
 	pokemon_t* pokemon1 = lista_elemento_en_posicion(adversario->pokemon, (size_t)indice_pokemon1);
 	pokemon_t* pokemon2 = lista_elemento_en_posicion(adversario->pokemon, (size_t)indice_pokemon2);
