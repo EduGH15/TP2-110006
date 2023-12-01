@@ -9,7 +9,7 @@ Post: Devuelve un puntero a una estructura de tipo comando_t correctamente inici
 */
 comando_t *comando_crear(const char *nombre, const char *instruccion,
 			 const char *descripcion,
-			 bool (*funcion)(void *, void *))
+			 bool (*funcion)(void *, void* contexto), void* contexto)
 {
 	if (!nombre || !instruccion || !descripcion || !funcion){
 		return NULL;
@@ -24,6 +24,7 @@ comando_t *comando_crear(const char *nombre, const char *instruccion,
 	comando->instruccion = instruccion;
 	comando->descripcion = descripcion;
 	comando->funcion = funcion;
+	comando->contexto = contexto;
 	return comando;
 }
 
@@ -42,13 +43,13 @@ menu_t *menu_crear(){
 
 menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 			     const char *instruccion, const char *descripcion,
-			     bool (*funcion)(void *, void *), void *contexto)
+			     bool (*funcion)(void *, void *), void* contexto)
 {
 	if(!menu || !nombre || !instruccion || !descripcion || !funcion || hash_contiene(menu->comandos, instruccion) == true){
 		return NULL;
 	}
 
-    comando_t *comando = comando_crear(nombre, instruccion, descripcion, funcion);
+    comando_t *comando = comando_crear(nombre, instruccion, descripcion, funcion, contexto);
     if (comando == NULL)
     {
         return NULL;

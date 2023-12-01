@@ -33,7 +33,7 @@ juego_t* juego_crear() {
         free(juego);
         return NULL;
     }
-    juego->cantidad_rondas = 9;
+    juego->cantidad_rondas = 8;
     juego->finalizado = false;
 
     return juego;
@@ -85,7 +85,7 @@ lista_t *juego_listar_pokemon(juego_t *juego) {
 JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
                                        const char *nombre1, const char *nombre2,
                                        const char *nombre3) {
-    if (!juego || !nombre1 || !nombre2 || !nombre3) {
+    if (!juego) {
         return ERROR_GENERAL;
     }
 

@@ -144,3 +144,39 @@ Validamos si el ataque fue utilizado o no, esto se hace verificando si el ataque
 
 Luego calculamos la efectividad y el puntaje del ataque realizado ya sea por el jugador 1 o jugador 2. Actualizamos los puntajes de los jugadores y eliminamos el ataque recién utilizado.
 
+
+## Complejidad del Juego.c:
+
+La complejidad de jeugo_crear es O(1) ya que la asignación de memoria para juego es O(1), la creación de jugadores (juego->jugador_1 y juego->jugador_2) dependen de jugador_crear, que es O(1).Y la creación de la lista de pokemones totales (juego->pokemones_totales) también es O(1). Encima la configuración de campos y verificación de errores es O(1).
+
+```c
+	juego_t* juego_crear()
+```
+
+La complejidad de juego_obtener_puntaje es de tiempo constante ya que sus operaciones se ejecutan en tiempo constante. Lo mismo ocurre con juego_finalizado y juego_listar_pokemon.
+
+```c
+	int juego_obtener_puntaje(juego_t *juego, JUGADOR jugador)
+
+	bool juego_finalizado(juego_t *juego)
+
+	lista_t *juego_listar_pokemon(juego_t *juego)
+
+
+```
+
+
+## Complejidad de funciones_varias.h
+
+ la complejidad de jugador_crear es O(1) en el peor caso, ya que cada operación individual dentro de la función implica un número constante de pasos.
+
+```c
+	jugador_t* jugador_crear()
+```
+
+La funcion jugador_destruir realiza la destrucción de la lista de pokemones (jugador->pokemones) en donde la complejidad depende de la cantidad de pokemones en la lista, siendo O(n), donde "n" es el número de pokemones en la lista. Luego realiza la destrucción del árbol binario de búsqueda (jugador->ataques_disponibles) en donde la complejidad depende del tamaño del árbol, siendo O(m), donde "m" es la cantidad de elementos en el árbol. Y la liberación de la estructura es O(1).
+Por lo que puedo decir que la complejidad de jugador_destruir es O(m+n).
+
+```c
+	void jugador_destruir(jugador_t* jugador) {
+```

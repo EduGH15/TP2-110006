@@ -19,18 +19,16 @@ Post: Devuelve un booleano que indica si se pudo solicitar y almacenar un archiv
       - El contenido ingresado por el usuario se copia en el espacio apuntado por contexto2.
       - La memoria asignada para el archivo se libera adecuadamente.
 */
-bool pedir_archivo(void* contexto1, void* contexto2) {
-    char* archivo = calloc(20, sizeof(char));
-    if (archivo == NULL) {
+bool pedir_archivo(void* contexto1, void* archivo) {
+    char* nombre_archivo = calloc(100, sizeof(char));  // Asigna memoria para el nombre del archivo
+    if (nombre_archivo == NULL) {
         return false;
     }
 
     printf("Ingrese un archivo para cargar: ");
-    scanf("%s", archivo);
-
-    strcpy((char*)contexto2, archivo);
-
-    free(archivo);
+    scanf("%s", nombre_archivo);
+    strcpy((char*)archivo, nombre_archivo);
+    free(nombre_archivo);  
 
     return true;
 }
@@ -66,8 +64,10 @@ bool limpiar_terminal(void *_menu, void *_contexto)
 Pre:-----------------------------------------------
 Post: dado un menu, retorna true si este no es NULL.
 */
-bool salir_del_programa(void* menu, void* instruccion){
+bool salir_del_programa(void* menu, void* finalizado){
 	if(!menu) return false;
+	printf("Saliste del programa\n");
+	*(bool*)finalizado = true;
 	return true;
 }
 
@@ -78,15 +78,14 @@ Post: Lee una línea de entrada desde stdin y almacena la instrucción resultant
       Convierte la instrucción a minúsculas.
       Devuelve un puntero a la cadena de instruccion.
 */
-char* registrar_acciones(char* entrada, char* instruccion){
+void registrar_acciones(char* instruccion){
 	printf("Ingresa un comando para realizar una acción. Presiona 'a' para acceder a la ayuda: ");
-	fgets(entrada, MAX_STRING, stdin);
-	sscanf(entrada,"%s", instruccion);
+	scanf("%s", instruccion);
 	for(int i = 0; instruccion[i]; i++){
 		instruccion[i] = (char)tolower(instruccion[i]);
 	}
-	return instruccion;
 } 
+
 
 /*
 Pre:  Recibe un puntero no nulo a una estructura de tipo pokemon_t correctamente inicializada.
@@ -109,7 +108,7 @@ Post: Muestra la información del pokemon (nombre y tipo) utilizando la función
       Si alguno de los punteros es nulo, la función devuelve false para detener la iteración.
 */
 bool mostrar_pokemon(void* elemento, void* contexto) {
-	if(!elemento || !contexto) return false;
+	if(!elemento) return false;
     pokemon_t* pokemon = (pokemon_t*)elemento;
     mostrar_informacion_pokemon(pokemon);
     return true;
@@ -130,34 +129,114 @@ void mostrar_pokemon_disponibles(juego_t* juego) {
     lista_con_cada_elemento(juego_listar_pokemon(juego), mostrar_pokemon, NULL);
 }
 
-int main(int argc, char *argv[])
+void mostrar_pokemon_disponibles_jugador(juego_t* juego, char* eleccionJugador1, char* eleccionJugador2, char* eleccionAdversario3) {
+    if (!juego) {
+        return;
+    }
+    printf("Tus pokemones son: %s\n", eleccionJugador1);
+	printf("Tus pokemones son: %s\n", eleccionJugador2);
+    printf("Tus pokemones son: %s\n", eleccionAdversario3);
+
+}
+
+void jugador_seleccionar_pokemon(char eleccionJugador1[50], char eleccionJugador2[50], char eleccionJugador3[50]){
+	printf("Ingresa un pokemon para ti: ");
+	scanf("%s", eleccionJugador1);
+	printf("Ingresa un pokemon para ti: ");
+	scanf("%s", eleccionJugador2);
+	printf("Ingresa un pokemon para el adversario: ");
+	scanf("%s", eleccionJugador3);
+}
+
+jugada_t jugador_pedir_nombre_y_ataque(){
+	jugada_t j;
+	char nombre_poke[20];
+	char poke_ataque[20];
+	printf("Ingrese el nombre del pokemon: ");
+	scanf("%s", nombre_poke);
+	printf("Ingrese el nombre del ataque: ");
+	scanf("%s", poke_ataque);
+	strcpy(j.pokemon, nombre_poke);
+	strcpy(j.ataque, poke_ataque);
+	return j;
+}
+
+int main(int argc, char *argv[])		
 {	
 	menu_t* menu = menu_crear();
 	juego_t *juego = juego_crear();
 	adversario_t *adversario = adversario_crear(juego_listar_pokemon(juego));
 
-	char nombre_archivo[20];
-	bool finalizado = false;
+	char archivo[100];
 
-	menu_agregar_comando(menu, "Pedir Archivo", "p", "Pide un archivo txt", pedir_archivo, nombre_archivo);
+	menu_agregar_comando(menu, "Pedir Archivo", "p", "Pide un archivo txt", pedir_archivo, archivo);
 	menu_agregar_comando(menu, "Mostrar Ayuda", "a", "Muestra un mensaje de ayuda sobre las acciones disponibles", mostrar_mensaje_ayuda, NULL);
-	menu_agregar_comando(menu, "Limpiar terminal", "l", "Borra todo lo que esté en la terminal", limpiar_terminal, NULL);
-	menu_agregar_comando(menu, "Salir del programa", "s", "Sale del programa y destruye el menu", salir_del_programa, NULL);
-	char entrada[MAX_STRING];
-	char instruccion[MAX_STRING];
 
-	seccion_1:
-	while (!finalizado) {
-		const char * comando = registrar_acciones(entrada, instruccion);
-		if (strcmp(comando, "s") == 0){
-			finalizado = true;
-		}else if(strcmp(comando, "e") == 0){
-			juego_cargar_pokemon(juego, nombre_archivo);
-		}else if (!menu_ejecutar_comando(menu, instruccion)){
-			printf("El comando no es válido o hubo un error de ejecución.\n");
-			goto seccion_1;
-		}		
-	}		
+	menu_ejecutar_comando(menu, "p");
+	JUEGO_ESTADO estado = juego_cargar_pokemon(juego, archivo);
+	if(estado == ERROR_GENERAL){
+		printf("Error General\n");
+	}else if(estado == POKEMON_INSUFICIENTES){
+		printf("El archivo no contiene la cantidad de pokemones suficientes para jugar");
+	}else{
+		mostrar_pokemon_disponibles(juego);
+	}
+
+	//Pedirle al jugador por consola que ingrese los 3 nombres de pokemon que quiere utilizar
+	char eleccionJugador1[50];
+	char eleccionJugador2[50];
+	char eleccionJugador3[50];
+
+	jugador_seleccionar_pokemon(eleccionJugador1, eleccionJugador2, eleccionJugador3);
+	juego_seleccionar_pokemon(juego, JUGADOR1, eleccionJugador1, eleccionJugador2, eleccionJugador3);
+
+	//pedirle al adversario que indique los 3 pokemon que quiere usar
+	char *eleccionAdversario1 = NULL;
+	char *eleccionAdversario2 = NULL;
+	char *eleccionAdversario3 = NULL;
+
+	adversario_seleccionar_pokemon(adversario, &eleccionAdversario1, &eleccionAdversario2, &eleccionAdversario3);
+	juego_seleccionar_pokemon(juego, JUGADOR2, eleccionAdversario1, eleccionAdversario2, eleccionAdversario3);
+
+	//informarle al adversario cuales son los pokemon del jugador
+	adversario_pokemon_seleccionado(adversario, eleccionJugador1,
+					eleccionJugador2, eleccionJugador3);
+
+	while (!juego_finalizado(juego)) {
+		resultado_jugada_t resultado_ronda;
+		
+		//Mostrar el listado de pokemones por consola para que el usuario sepa las opciones que tiene
+		mostrar_pokemon_disponibles_jugador(juego, eleccionJugador1, eleccionJugador2, eleccionAdversario3);
+
+		//Pide al jugador que ingrese por consola el pokemon y ataque para la siguiente ronda
+		jugada_t jugada_jugador = jugador_pedir_nombre_y_ataque();
+
+		//Pide al adversario que informe el pokemon y ataque para la siguiente ronda
+		jugada_t jugada_adversario =
+			adversario_proxima_jugada(adversario);
+
+		//jugar la ronda y después comprobar que esté todo ok, si no, volver a pedir la jugada del jugador
+		resultado_ronda = juego_jugar_turno(juego, jugada_jugador,
+						    jugada_adversario);
+
+		if (resultado_ronda.jugador1 == ATAQUE_ERROR){
+			printf("Hubo un error.\n");
+			break;
+		}
+
+		printf("Tus puntos son: %i\n", juego_obtener_puntaje(juego, JUGADOR1));
+		printf("Los puntos del adversario son: %i\n", juego_obtener_puntaje(juego, JUGADOR2));
+
+	}
+	
+	if(juego_obtener_puntaje(juego, JUGADOR1) > juego_obtener_puntaje(juego, JUGADOR2)){
+		printf("GANASTE!!!!!!!");
+	}else if(juego_obtener_puntaje(juego, JUGADOR1) == juego_obtener_puntaje(juego, JUGADOR2)){
+		printf("EMPATE!!!!!!!");
+	}else{
+		printf("PERDISTE!!!");
+	}
+
 
 	menu_destruir(menu);
 	juego_destruir(juego);
