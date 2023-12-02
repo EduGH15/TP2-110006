@@ -9,6 +9,20 @@
 #include "pokemon.h"
 #include "ataque.h"
 #include "abb.h"
+#include "adversario.h"
+
+typedef struct datos{
+    char* nombres[3];
+    size_t cantidad_nombres;
+}dato_t;
+
+struct adversario {
+    lista_t* pokemon;
+    lista_t* pokemones_disponibles;
+    lista_t* pokemones_jugador;
+    jugada_t posibles_jugadas[9];
+    size_t cantidad_jugadas;
+};
 
 typedef struct {
     lista_t* pokemones;
@@ -24,6 +38,10 @@ struct juego {
     int cantidad_rondas;
     bool finalizado;
 };
+
+bool guardar_nombres(void* pokemon, void* datos);
+
+void agregar_ataque_a_vector(const struct ataque* ataque, void* adversario);
 
 /*
 Pre:  Recibe dos punteros void (elemento1 y elemento2), que se asumen apuntan a cadenas de caracteres.

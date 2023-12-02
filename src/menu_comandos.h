@@ -12,15 +12,17 @@
 typedef enum {
 	ERROR_CARGAR,
 	COMANDO_INEXISTENTE,
-      //ARCHIVO_INEXISTENTE,
       CARGA_EXITOSA,
+      ARCHIVO_YA_CARGADO,
       ESTADO_OK,
       ESTADO_ERROR,
       POKES_INSUFICIENTES,
       POKES_REPETIDOS,
       POKES_INEXISTENTES,
+      SIN_POKES,
       CARGA_POKES_EXITOSA,
-      ATAQUE_REALIZADO
+      ATAQUE_REALIZADO,
+      JUGADA_ERROR
 } COMANDO_ESTADO;
 
 typedef struct comando {
@@ -44,8 +46,8 @@ menu_t *menu_crear();
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo menu_t (menu), una cadena de caracteres no nula (nombre), una cadena de
-      caracteres no nula (instruccion), una cadena de caracteres no nula (descripcion), un puntero a una función booleana
-      no nula (funcion), y un puntero a contexto. El puntero a menu debe ser válido y estar correctamente inicializado.
+      caracteres no nula (instruccion), una cadena de caracteres no nula (descripcion), un puntero a una función COMANDO_ESTADO
+      no nula, y un puntero a contexto. El puntero a menu debe ser válido y estar correctamente inicializado.
       Además, la instrucción del comando no debe existir previamente en el menú.
 Post: Agrega un nuevo comando al menú con la información proporcionada. Devuelve un puntero al menú modificado.
       Si hay algún error en la asignación de memoria, si algún puntero es nulo o si la instrucción del comando ya existe
@@ -69,11 +71,11 @@ menu_t *menu_eliminar_comando(menu_t *menu, const char *instruccion);
 /*
 Pre:  Recibe un puntero a una estructura de tipo menu_t (menu) y una cadena de caracteres no nula (instruccion).
       El puntero a menu debe ser válido y estar correctamente inicializado. La instrucción del comando debe existir
-      previamente en el menú y el contexto del comando puede ser nulo.
+      previamente en el menú y el contexto del comando no puede ser nulo.
 Post: Ejecuta la función asociada a la instrucción dada en el menú, pasando como argumentos el propio menú y el contexto
-      del comando. Devuelve un puntero al menú modificado.
+      del comando. Devuelve un COMANDO_ESTADO.
       Si hay algún error (puntero nulo, la instrucción no existe en el menú o la ejecución de la función falla),
-      devuelve NULL.
+      devuelve COMANDO_INEXISTENTE.
 */
 COMANDO_ESTADO menu_ejecutar_comando(menu_t *menu, const char *instruccion);
 

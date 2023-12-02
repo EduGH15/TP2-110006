@@ -1,5 +1,19 @@
 #include "funciones_varias.h"
 
+bool guardar_nombres(void* pokemon, void* datos){
+    pokemon_t* pokemon_nuevo = pokemon;
+    dato_t* datos_nuevos = datos;
+    datos_nuevos->nombres[datos_nuevos->cantidad_nombres] = (char*)pokemon_nombre(pokemon_nuevo);
+    datos_nuevos->cantidad_nombres++;
+    return true;
+}
+
+void agregar_ataque_a_vector(const struct ataque* ataque, void* adversario){
+    adversario_t* adversario_nuevo = adversario;
+    strcpy(adversario_nuevo->posibles_jugadas[adversario_nuevo->cantidad_jugadas].ataque,ataque->nombre);
+    adversario_nuevo->cantidad_jugadas++;
+}
+
 int comparador_cadenas(void *elemento1, void *elemento2) {
     const char *cadena1 = (const char *)elemento1;
     const char *cadena2 = (const char *)elemento2;

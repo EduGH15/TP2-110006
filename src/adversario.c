@@ -8,36 +8,6 @@
 #include "abb.h"
 #include "funciones_varias.h"
 
-typedef struct datos{
-    char* nombres[3];
-    size_t cantidad_nombres;
-}dato_t;
-
-struct adversario {
-    lista_t* pokemon;
-	lista_t* pokemones_disponibles;
-    //abb_t* ataques_disponibles;
-	lista_t* pokemones_jugador;
-	abb_t* ataques_jugador;
-    jugada_t posibles_jugadas[9];
-    size_t cantidad_jugadas;
-};
-
-
-bool guardar_nombres(void* pokemon, void* datos){
-    pokemon_t* pokemon_nuevo = pokemon;
-    dato_t* datos_nuevos = datos;
-    datos_nuevos->nombres[datos_nuevos->cantidad_nombres] = (char*)pokemon_nombre(pokemon_nuevo);
-    datos_nuevos->cantidad_nombres++;
-    return true;
-}
-
-void agregar_ataque_a_vector(const struct ataque* ataque, void* adversario){
-    adversario_t* adversario_nuevo = adversario;
-    strcpy(adversario_nuevo->posibles_jugadas[adversario_nuevo->cantidad_jugadas].ataque,ataque->nombre);
-    adversario_nuevo->cantidad_jugadas++;
-}
-
 adversario_t *adversario_crear(lista_t *pokemon)
 {
 	if (!pokemon) {
@@ -156,13 +126,8 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
     int indice_jugada = rand() % (int)adversario->cantidad_jugadas;
     strcpy(j.ataque,adversario->posibles_jugadas[indice_jugada].ataque);
     strcpy(j.pokemon,adversario->posibles_jugadas[indice_jugada].pokemon);
-    // printf("El nombre del pokemon del adversario que va a atacar es: %s\n", j.pokemon);
-    // printf("El pokemon adversario usó: %s\n", j.ataque);
-
     adversario->posibles_jugadas[indice_jugada] = adversario->posibles_jugadas[adversario->cantidad_jugadas - 1];
     (adversario->cantidad_jugadas)--;
-
-    
     return j;
 }
 

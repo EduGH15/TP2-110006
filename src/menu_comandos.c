@@ -2,7 +2,7 @@
 
 /*
 Pre:  Recibe un puntero a una cadena de caracteres no nula (nombre), un puntero a una cadena de caracteres no nula
-      (instruccion), un puntero a una cadena de caracteres no nula (descripcion), y un puntero a una función booleana
+      (instruccion), un puntero a una cadena de caracteres no nula (descripcion), y un puntero a una función
       (funcion). Todos los punteros deben ser válidos.
 Post: Devuelve un puntero a una estructura de tipo comando_t correctamente inicializada con los datos proporcionados.
       Si hay algún error en la asignación de memoria o algún puntero es nulo, devuelve NULL.

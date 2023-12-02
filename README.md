@@ -33,7 +33,9 @@ Para la creación del TDA Menú se decidió usar el TDA Hash ya que su estructur
 La funcion comando_crear tiene una complejidad de O(1) ya que se supone que la asignación de memoria se realiza en tiempo constante, al igual que la asignación de valores para cada campo del struct comando.
 
 ```c
-comando_t *comando_crear(const char *nombre, const char *instruccion, const char *descripcion, bool (*funcion)(void *, void *))
+comando_t *comando_crear(const char *nombre, const char *instruccion,
+			 const char *descripcion,
+			 COMANDO_ESTADO (*funcion)(void *, void* contexto), void* contexto)
 ```
 
 Para la función de menu_crear se considera que la asignación de memoria para el menu se realiza en tiempo constante. Luego la función hash_crear tiene una complejidad O(n) con respecto al tamaño del hash aunque, dado que el tamaño del hash para este caso es una constante, entonces se toma que menu_crear tiene complejidad O(1).
@@ -47,7 +49,7 @@ Dado que la función menu_agregar_comando depende de gran medida de la funcion h
 ```c
 menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 			     const char *instruccion, const char *descripcion,
-			     bool (*funcion)(void *, void *), void *contexto)
+			     COMANDO_ESTADO (*funcion)(void *, void *), void* contexto);
 ```
 
 Para la funcion de menu_eliminar_comando, su complejidad será O(n) debido a que su operación principal se basa en hash_quitar,
@@ -60,7 +62,7 @@ menu_t *menu_eliminar_comando(menu_t *menu, const char *instruccion)
 Para la funcion menu_ejecutar_comando la complejidad es O(1) considerando que la operación principal es hash obtener, cuya complejidad es O(1).
 
 ```c
-menu_t *menu_ejecutar_comando(menu_t *menu, const char *instruccion)
+COMANDO_ESTADO menu_ejecutar_comando(menu_t *menu, const char *instruccion);
 ```
 
 La funcion menu_contiene_comando es de tiempo constante.
@@ -91,7 +93,7 @@ void menu_destruir(menu_t *menu)
 
 # Estructura del juego y del Jugador en Juego.c:
 
-Para crear un juego se pensó en las siguientes estructuras. Primero, un struct juego que tiene por campos dos campos jugador_t*, un informacion_pokemon_t* info_pokemon (cuya estructura está definida en el tp1), una cantidad de rondas que se inicializa en 9 y un booleano que se inicializa en false.
+Para crear un juego se pensó en las siguientes estructuras. Primero, un struct juego que tiene por campos dos campos jugador_t*, un informacion_pokemon_t* info_pokemon (cuya estructura está definida en el tp1), una cantidad de rondas que se inicializa en 8 y un booleano que se inicializa en false.
 
 El struct de jugador cuenta con una lista de pokemones que son elegidos por el jugador, y un abb de ataques disponibles. Se utilizó un abb de ataques para que, cuando el jugador realice un movimiento, dicho movimiento pueda ser buscado y eliminado del arbol fácilmente, cosa que se complica si hubiera usado una lista. Y también cuenta con un puntaje que se va actualizando conforme avance el juego. 
 
@@ -162,9 +164,32 @@ La complejidad de juego_obtener_puntaje es de tiempo constante ya que sus operac
 
 	lista_t *juego_listar_pokemon(juego_t *juego)
 
-
 ```
 
+Para analizar la complejidad de juego_seleccionar_pokemon pensemos en una de sus operaciones principales, pokemon_buscar tiene una complejidad de O(n) con respecto a la cantidad de pokemones en informacion_pokemon_t, Luego agregar_pokemon_jugador contiene un lista_insertar cuya complejidad es O(n) con respecto a la cantidad de pokemones en la lista y por cada pokemon se realiza un abb_insertar(abb, ataque) cuya inserción es O(log(n)) donde n es la cantidad de elementos presentes en el arbol (esto, suponiendo que está balanceado). Por lo tanto, como ambas funciones (tanto lista_insertar como abb_insertar) no se encuentran al mismo nivel, puedo tomar en cuenta la que mayor tasa de crecimiento tiene y decir que la complejidad de agregar_pokemon_jugador es O(n). Finalmente digo que juego_seleccionar_pokemon tiene una complejidad de O(n).
+```c
+	JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
+                                       const char *nombre1, const char *nombre2,
+                                       const char *nombre3) 
+```
+
+Para analizar la complejidad de juego_cargar_pokemon pensemos en una de las operaciones principales, la cual es pokemon_cargar_archivo cuya complejidad es O(n) respecto de la cantidad de lineas que procesa. Luego tenemos la funcion agregar_pokemon_a_lista cuya complejidad es O(n) respecto a la cantidad de pokemones ya que depende de lista_insertar. Asi que juego_cargar_pokemon tiene una complejidad de O(n).
+```c
+    JUEGO_ESTADO juego_cargar_pokemon(juego_t *juego, char *archivo)
+```
+
+La función juego_jugar_turno cuenta con lista_buscar_elemento cuya complejidad es O(n) respecto a la cantidad de pokemones presentes en la lista, luego pokemon_buscar_ataque cuya complejidad es O(n) respecto de la cantidad de ataques presentes en el pokemon. calcular_efectividad_y_puntaje tiene una complejidad de O(1), y por ultimo la función eliminar_ataque_ya_utilizado también es O(n). Asi que en definitiva la función juego_jugar_turno tiene una complejidad de O(n).
+```c
+    resultado_jugada_t juego_jugar_turno(juego_t *juego, jugada_t jugada_jugador1,
+                                     jugada_t jugada_jugador2) 
+```
+
+Por ultimo, la complejidad de juego_destruir es O(n) ya que involucra destruir un jugador, que implica destruir una lista cuya complejidad es O(n) con respecto a la cantidad de pokemones, también se destruye un arbol que eso también es O(n) con respecto a la cantidad de ataques. luego se destruye la lista de pokemones totales, que eso es O(n) respecto a la cantidad de pokemones, y luego se destruye info_pokemon. 
+
+```c
+    void juego_destruir(juego_t* juego) 
+
+```
 
 ## Complejidad de funciones_varias.h
 
