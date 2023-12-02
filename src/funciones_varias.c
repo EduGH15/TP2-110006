@@ -114,7 +114,6 @@ int calcular_efectividad_y_puntaje(const struct ataque *ataque,
 	if (!ataque || !pokemon_atacado || !resultado || !juego || !jugador) {
 		return 0;
 	}
-	// Definir la matriz de efectividades localmente
 	const float efectividades[6][6] = {
 		// NORMAL, FUEGO, AGUA, PLANTA, ELECTRICO, ROCA
 		{ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 }, // ATAQUE_NORMAL
@@ -183,21 +182,4 @@ void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque)
 	const char *nombre_ataque_a_eliminar = ataque->nombre;
 	abb_quitar(jugador->ataques_disponibles,
 		   (void *)nombre_ataque_a_eliminar);
-}
-
-bool hay_ataque(void *elemento, void *aux)
-{
-	struct ataque *ataque_abb = (struct ataque *)elemento;
-	struct ataque *auxiliar = (struct ataque *)aux;
-
-	if (!auxiliar) {
-		strncpy(auxiliar->nombre, ataque_abb->nombre,
-			sizeof(auxiliar->nombre) - 1);
-		auxiliar->nombre[sizeof(auxiliar->nombre) - 1] = '\0';
-		auxiliar->poder = ataque_abb->poder;
-		auxiliar->tipo = ataque_abb->tipo;
-		return true;
-	}
-
-	return false;
 }

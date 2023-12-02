@@ -21,6 +21,14 @@ typedef struct datos_comprimidos {
 	lista_t *pokes_adversario;
 } datos_comprimidos_t;
 
+/**
+ * Completa las jugadas del usuario con los nombres de los pokemones y sus ataques.
+ *
+ * Pre: datos no es NULL y contiene punteros válidos a juego, adversario, pokes_usuario,
+ *      pokes_adversario, y jugadas_usuario con tamaños suficientes.
+ * Post: jugadas_usuario se completa con los nombres y ataques de los pokemones del usuario.
+ */
+
 void completar_jugadas(const struct ataque *ataque, void *datos)
 {
 	datos_comprimidos_t *datos_ = datos;
@@ -29,6 +37,13 @@ void completar_jugadas(const struct ataque *ataque, void *datos)
 	datos_->cantidad_jugadas++;
 }
 
+/**
+ * Completa una jugada del usuario con el nombre y el ataque del pokemon.
+ *
+ * Pre: datos contiene punteros válidos a juego, adversario,
+ *      pokes_usuario, pokes_adversario, y jugadas_usuario con tamaños suficientes.
+ * Post: Se agrega una jugada al arreglo jugadas_usuario en datos con el nombre y el ataque del pokemon.
+ */
 void cargar_jugadas(datos_comprimidos_t *datos)
 {
 	int pos_pokemon = 0;
@@ -45,6 +60,13 @@ void cargar_jugadas(datos_comprimidos_t *datos)
 	}
 }
 
+/**
+ * Verifica si la jugada dada se encuentra en las jugadas del usuario en datos.
+ *
+ * Pre: datos contiene punteros válidos a jugadas_usuario con tamaño suficiente.
+ * Post: Si la jugada está en jugadas_usuario en datos, se marca como "usado" y devuelve true. 
+ *       Si no se encuentra, devuelve false.
+ */
 bool verificar_datos(jugada_t jugada, datos_comprimidos_t *datos)
 {
 	for (int i = 0; i < 9; i++) {
@@ -60,6 +82,13 @@ bool verificar_datos(jugada_t jugada, datos_comprimidos_t *datos)
 	return false;
 }
 
+/**
+ * Lee una línea de hasta 199 caracteres desde la entrada estándar.
+ * 
+ * Pre: linea es un array de caracteres de al menos tamaño 100.
+ * Post: Se lee una línea de stdin y se almacena en linea. Si se lee correctamente,
+ *       se elimina el salto de línea del final si existe.
+ */
 void leer_linea(char linea[])
 {
 	char *leido;
@@ -69,6 +98,12 @@ void leer_linea(char linea[])
 	}
 }
 
+/**
+ * Interpreta y devuelve una cadena de caracteres que representa el tipo de Pokémon.
+ * 
+ * Pre: tipo es un valor válido de la enumeración TIPO.
+ * Post: Devuelve una cadena de caracteres con el nombre del tipo correspondiente.
+ */
 char *interpretar_tipo(enum TIPO tipo)
 {
 	if (tipo == NORMAL) {
@@ -85,6 +120,11 @@ char *interpretar_tipo(enum TIPO tipo)
 	return "ROCA";
 }
 
+/** 
+ * Pre: lista_juego y lista_pokes son listas válidas. eleccion1, eleccion2 y eleccion3
+ *      son nombres válidos de pokemones.
+ * Post: Agrega los pokemones seleccionados a la lista_pokes.
+ */
 void listar_pokemones(lista_t *lista_juego, lista_t *lista_pokes,
 		      char *eleccion1, char *eleccion2, char *eleccion3)
 {
@@ -100,6 +140,12 @@ void listar_pokemones(lista_t *lista_juego, lista_t *lista_pokes,
 	lista_insertar(lista_pokes, pokemon3);
 }
 
+/**
+ * Solicita al usuario el nombre de un archivo para cargar pokemones en el juego.
+ * 
+ * Pre: contexto1 y juego son punteros válidos.
+ * Post: Retorna el estado correspondiente según la carga del archivo.
+ */
 COMANDO_ESTADO pedir_archivo(void *contexto1, void *juego)
 {
 	char nombre_archivo[50];
@@ -117,6 +163,12 @@ COMANDO_ESTADO pedir_archivo(void *contexto1, void *juego)
 	return CARGA_EXITOSA;
 }
 
+/**
+ * Muestra los comandos disponibles por consola.
+ * 
+ * Pre: ---------------------------------------------------------------
+ * Post: Imprime en consola los comandos disponibles y retorna ESTADO_OK.
+ */
 COMANDO_ESTADO mostrar_mensaje_ayuda(void *arg1, void *arg2)
 {
 	printf("\n	╔══════════════════════════════════════════════════════════════╗\n"
@@ -134,6 +186,13 @@ COMANDO_ESTADO mostrar_mensaje_ayuda(void *arg1, void *arg2)
 	return ESTADO_OK;
 }
 
+/**
+ * Sale del programa.
+ * 
+ * Pre: menu y salir son un puntero válido.
+ * Post: Imprime un mensaje de salida en consola, actualiza el valor de salir a true y retorna ESTADO_OK.
+ */
+
 COMANDO_ESTADO salir_del_programa(void *menu, void *salir)
 {
 	if (!menu)
@@ -142,6 +201,14 @@ COMANDO_ESTADO salir_del_programa(void *menu, void *salir)
 	*(bool *)salir = true;
 	return ESTADO_OK;
 }
+
+/**
+ * Muestra en consola los pokemones disponibles del jugador.
+ * 
+ * Pre: juego es un puntero válido.
+ *      eleccionJugador1, eleccionJugador2 y eleccionAdversario3 son punteros a cadenas de caracteres válidos.
+ * Post: Imprime en consola los pokemones disponibles del jugador con los nombres proporcionados.
+ */
 
 void mostrar_pokemon_disponibles_jugador(juego_t *juego, char *eleccionJugador1,
 					 char *eleccionJugador2,
@@ -155,6 +222,13 @@ void mostrar_pokemon_disponibles_jugador(juego_t *juego, char *eleccionJugador1,
 	printf("Tus pokemones son: %s\n", eleccionAdversario3);
 }
 
+/**
+ * Ejecuta el comando de elegir pokemones en el juego.
+ * 
+ * Pre: contexto y datos son punteros válidos a estructuras de datos necesarias para la ejecución del comando.
+ * Post: Realiza la selección de pokemones para los jugadores y adversario en el juego.
+ *       Devuelve el estado correspondiente al resultado de la ejecución del comando.
+ */
 COMANDO_ESTADO elegir_pokemones(void *contexto, void *datos)
 {
 	datos_comprimidos_t *datos_ = datos;
@@ -198,11 +272,27 @@ COMANDO_ESTADO elegir_pokemones(void *contexto, void *datos)
 	return CARGA_POKES_EXITOSA;
 }
 
+/**
+ * Muestra por consola la información de un ataque.
+ *
+ * Pre: ataque_ es un puntero válido a una estructura de ataque.
+ *      aux es un puntero auxiliar (no utilizado en esta función).
+ * Post: Imprime por consola el nombre y tipo del ataque.
+ */
 void mostrar_ataque(const struct ataque *ataque_, void *aux)
 {
 	(printf("ataque: %s.  Tipo: %s\n", ataque_->nombre,
 		interpretar_tipo(ataque_->tipo)));
 }
+
+/**
+ * Muestra por consola la información de un Pokémon.
+ *
+ * Pre: pokemon es un puntero válido a una estructura de Pokémon.
+ *      contexto es un puntero auxiliar (no utilizado en esta función).
+ * Post: Imprime por consola el nombre y tipo del Pokémon,
+ *       y muestra la información de sus ataques llamando a la función mostrar_ataque.
+ */
 
 bool mostrar_pokemon(void *pokemon, void *contexto)
 {
@@ -213,6 +303,14 @@ bool mostrar_pokemon(void *pokemon, void *contexto)
 	return true;
 }
 
+/**
+ * Muestra por consola la información de un Pokémon adversario.
+ *
+ * Pre: pokemon es un puntero válido a una estructura de Pokémon.
+ *      contexto es un puntero auxiliar (no utilizado en esta función).
+ * Post: Imprime por consola el nombre y tipo del Pokémon adversario.
+ */
+
 bool mostrar_pokemon_adversario(void *pokemon, void *contexto)
 {
 	pokemon_t *pokemon_ = pokemon;
@@ -221,6 +319,14 @@ bool mostrar_pokemon_adversario(void *pokemon, void *contexto)
 	return true;
 }
 
+/**
+ * Muestra por consola la lista de Pokémon cargados en el juego.
+ *
+ * Pre: contexto y juego son punteros válidos a datos de contexto y juego,
+ *      respectivamente.
+ * Post: Imprime por consola la información de cada Pokémon cargado en el juego.
+ *       Retorna ESTADO_OK.
+ */
 COMANDO_ESTADO mostrar_pokemones_cargados(void *contexto, void *juego)
 {
 	juego_t *juego_ = juego;
@@ -230,6 +336,15 @@ COMANDO_ESTADO mostrar_pokemones_cargados(void *contexto, void *juego)
 	return ESTADO_OK;
 }
 
+/**
+ * Muestra por consola el equipo de Pokémon de un jugador.
+ *
+ * Pre: contexto y lista_pokemones_usuario son punteros válidos a datos de contexto
+ *      y a una lista de pokémones del usuario, respectivamente.
+ * Post: Imprime por consola la información de cada Pokémon en la lista del usuario.
+ *       Retorna ESTADO_OK si la operación se realiza correctamente.
+ *       En caso de no tener pokémones en la lista, retorna SIN_POKES.
+ */
 COMANDO_ESTADO mostrar_equipo_pokemon(void *contexto,
 				      void *lista_pokemones_usuario)
 {
@@ -242,6 +357,15 @@ COMANDO_ESTADO mostrar_equipo_pokemon(void *contexto,
 	return ESTADO_OK;
 }
 
+/**
+ * Muestra por consola el equipo de Pokémon de un adversario.
+ *
+ * Pre: contexto y lista_pokemones_adversario son punteros válidos a datos de contexto
+ *      y a una lista de pokémones del adversario, respectivamente.
+ * Post: Imprime por consola la información de cada Pokémon en la lista del adversario.
+ *       Retorna ESTADO_OK si la operación se realiza correctamente.
+ *       En caso de no tener pokémones en la lista, retorna SIN_POKES.
+ */
 COMANDO_ESTADO
 mostrar_equipo_pokemon_adversario(void *contexto,
 				  void *lista_pokemones_adversario)
@@ -255,6 +379,13 @@ mostrar_equipo_pokemon_adversario(void *contexto,
 	return ESTADO_OK;
 }
 
+/**
+ * Solicita al jugador el nombre de un Pokémon y el nombre de un ataque.
+ *
+ * Pre: -----------------------------------------------------------------
+ * Post: Imprime por consola mensajes solicitando el nombre del Pokémon y del ataque,
+ *       y retorna una estructura jugada_t con los datos ingresados por el jugador.
+ */
 jugada_t jugador_pedir_nombre_y_ataque()
 {
 	jugada_t j;
@@ -269,6 +400,14 @@ jugada_t jugador_pedir_nombre_y_ataque()
 	return j;
 }
 
+/**
+ * Realiza una jugada en el juego, solicitando al jugador el nombre de un Pokémon
+ * y el nombre de un ataque, y ejecutando la jugada en el juego.
+ *
+ * Pre: El puntero contexto1 y datos no son nulo.
+ * Post: Imprime por consola el resultado de la jugada y retorna el estado de la misma. Si la jugada del usuario no es válida
+ * retornar JUGADA_ERROR, en caso contrario retorna ATAQUE_REALIZADO
+ */
 COMANDO_ESTADO realizar_jugada(void *contexto1, void *datos)
 {
 	datos_comprimidos_t *datos_ = datos;
@@ -286,6 +425,12 @@ COMANDO_ESTADO realizar_jugada(void *contexto1, void *datos)
 	return JUGADA_ERROR;
 }
 
+/**
+ * Imprime un mensaje asociado a un estado de comando en el juego.
+ *
+ * Pre: El estado pasado como argumento es válido.
+ * Post: Imprime por consola un mensaje relacionado con el estado pasado.
+ */
 void imprimir_mensaje(COMANDO_ESTADO estado)
 {
 	switch (estado) {
@@ -331,6 +476,12 @@ void imprimir_mensaje(COMANDO_ESTADO estado)
 	}
 }
 
+/**
+ * Muestra el resultado del juego indicando si el jugador ganó, empató o perdió.
+ *
+ * Pre: El juego es válido.
+ * Post: Imprime por consola el resultado del juego.
+ */
 void mostrar_resultado_juego(juego_t *juego)
 {
 	if (juego_obtener_puntaje(juego, JUGADOR1) >

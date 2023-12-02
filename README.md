@@ -191,17 +191,166 @@ Por ultimo, la complejidad de juego_destruir es O(n) ya que involucra destruir u
 
 ```
 
-## Complejidad de funciones_varias.h
+## Funcionamiento del main
 
- la complejidad de jugador_crear es O(1) en el peor caso, ya que cada operación individual dentro de la función implica un número constante de pasos.
+Para el flujo del juego se optó por crear una estructura de datos de la siguiente forma:
 
 ```c
-	jugador_t* jugador_crear()
+    typedef struct datos_comprimidos {
+        juego_t *juego;
+        adversario_t *adversario;
+        lista_t *pokes_usuario;
+        jugada_t jugadas_usuario[9];
+        size_t cantidad_jugadas;
+        lista_t *pokes_adversario;
+    } datos_comprimidos_t;
 ```
 
-La funcion jugador_destruir realiza la destrucción de la lista de pokemones (jugador->pokemones) en donde la complejidad depende de la cantidad de pokemones en la lista, siendo O(n), donde "n" es el número de pokemones en la lista. Luego realiza la destrucción del árbol binario de búsqueda (jugador->ataques_disponibles) en donde la complejidad depende del tamaño del árbol, siendo O(m), donde "m" es la cantidad de elementos en el árbol. Y la liberación de la estructura es O(1).
-Por lo que puedo decir que la complejidad de jugador_destruir es O(m+n).
+Esta estructura me permite poder pasar por parámetro a ciertas funciones, por ejemplo: que el usuario pueda elegir los pokemones que quiere usar, al hacer esto podemos modificar la lista de pokes_usuarios elegidos por el jugador. 
+
+Al iniciar el main, comenzamos definiendo variables y estructuras necesarias para el flujo del juego
 
 ```c
-	void jugador_destruir(jugador_t* jugador) {
+    menu_t *menu = menu_crear();
+	juego_t *juego = juego_crear();
+	adversario_t *adversario =
+		adversario_crear(juego_listar_pokemon(juego));
+	datos_comprimidos_t datos;
+	datos.juego = juego;
+	datos.adversario = adversario;
+	lista_t *pokes_usuario_ = lista_crear();
+	if (!pokes_usuario_) {
+		return -1;
+	}
+	lista_t *pokes_adversario_ = lista_crear();
+	if (!pokes_adversario_) {
+		return -1;
+	}
+	datos.pokes_usuario = pokes_usuario_;
+	datos.pokes_adversario = pokes_adversario_;
+	bool salir = false;
+```
+
+Gracias al TDA Menu podemos crear diversos comandos que pueden ser utilizados por el usuario, entre ellos se encuentra:
+1.- "p": permite pedirle un archivo al usuario. realizamos validaciones para que el usuario no pueda ingresar nombres incorrectos, archivos con pokemones insuficientes o para que solo cargue una vez un archivo.
+
+2.- "a": permite mostrarle al usuario los comandos disponibles para utilizar. Lo ideal seria usar un menu_con_cada_comando que permita mostrar la descripción de cada comando, pero por falta de tiempo no se pudo.
+
+3.- "s": permite que el usuario pueda cortar el flujo del programa.
+
+4.- "e": permite que el usuario pueda elegir entre los pokemones presentes en el archivo después de cargarlo. Se realizan validaciones para que el usuario no pueda cargar pokemones en nuestra lista de pokes_usuario ubicado en la estructura de datos_comprimidos_t, entre las validaciones se encuentra que no exista el pokemon (que este caso se da si escribe mal el pokemon o si quiere elegir un pokemon antes de cargar el archivo).
+
+5.- "u": permite que el usuario pueda ver los pokemones que puede usar y los ataques que puede usar cada pokemon. También se realizan validaciones para que el usuario no pueda ver pokemones si ejecuta este comando antes de cargar el archivo. Así que no le muestra nada.
+
+6.- "m": permite que el usuario pueda ver todos los pokemones disponibles para armar su equipo pokemon. Se realizan validaciones para que no pueda elegir pokemones inexistentes o repetidos.
+
+7.- "d": permite que el usuario pueda ver todos los pokemones que tiene el adversario. 
+
+8.- "r": permite realizar una jugada, el usuario podrá elegir un pokemon y un ataque. Del mismo modo se realizan validaciones para que el usuario no pueda elegir los mismos pokemones (si es que no cuenta con otro pokemon igual) más de 3 veces o un ataque más de una vez. En caso de que suceda esto, se produce un error en la jugada, el adversario no realiza ningun movimiento y no se modifica el puntaje.
+
+Para validar las jugadas, se decidió alterar el vector de jugadas_usuario que se encuentra en el struct de datos_comprimidos_t, el cual contiene todas las opciones posibles, el nombre del pokemon, y cada ataque. Por cada vez que se realiza una validación, se recorre dicho vector. En caso de que el nombre y el ataque elegidos por el usuario se encuentren en este vector, significa que la jugada es válida así que podemos reescribir el pokemon y el ataque como usados, esto no permite que el usuario realice jugadas repetidas.
+
+```c
+    bool verificar_datos(jugada_t jugada, datos_comprimidos_t *datos)
+{
+	for (int i = 0; i < 9; i++) {
+		if (strcmp(datos->jugadas_usuario[i].pokemon, jugada.pokemon) ==
+			    0 &&
+		    strcmp(datos->jugadas_usuario[i].ataque, jugada.ataque) ==
+			    0) {
+			strcpy(datos->jugadas_usuario[i].ataque, "usado");
+			strcpy(datos->jugadas_usuario[i].pokemon, "usado");
+			return true;
+		}
+	}
+	return false;
+}
+```
+
+Siguiendo con el flujo del juego, cada vez que ejecutamos un comando, se imprime un mensaje dependiendo del estado, tenemos mensajes distintos para errores o casos de éxitos distintos, lo que permite orientar de mejor forma al usuario. Durante el curso del juego, por cada ataque realizado, mostramos en todo momento los puntos que posee el usuario y el adversario. Las únicas formas de salir deberían de ser si el usuario cierra el programa con "s" o si el juego está finalizado.
+
+```c
+    while (!salir && !juego_finalizado(juego)) {
+		printf("Ingresa un comando para realizar una acción. Presiona 'a' para acceder a la ayuda: ");
+		leer_linea(linea);
+		COMANDO_ESTADO estado = menu_ejecutar_comando(menu, linea);
+		imprimir_mensaje(estado);
+		if (estado == ATAQUE_REALIZADO) {
+			printf("Tus puntos son: %i\n",
+			       juego_obtener_puntaje(juego, JUGADOR1));
+			printf("Los puntos del adversario son: %i\n",
+			       juego_obtener_puntaje(juego, JUGADOR2));
+		}
+	}
+```
+
+Si el usuario decidió salir del programa, se decidió no mostrar si ganó, perdió o empató pues, nunca terminó de jugar.
+
+```c
+    if (!salir) {
+		mostrar_resultado_juego(juego);
+	}
+```
+
+Al final, destruimos toda la memoria almacenada.
+
+```c
+    lista_destruir(pokes_usuario_);
+	lista_destruir(pokes_adversario_);
+	menu_destruir(menu);
+	juego_destruir(juego);
+	adversario_destruir(adversario);
+	return 0;
+```
+
+Con respecto al cálculo de puntos, este se encuentra en funciones_varias.c y se optó por una matriz cuyas filas contienen el tipo del ataque y columnas contiene el tipo del pokemon. Esto nos permite que dependiendo de la posición, la efectividad sea 1, 0.5 o 3. 
+
+```c
+    int calcular_efectividad_y_puntaje(const struct ataque *ataque,
+				   pokemon_t *pokemon_atacado,
+				   resultado_jugada_t *resultado,
+				   juego_t *juego, jugador_t *jugador)
+{
+	if (!ataque || !pokemon_atacado || !resultado || !juego || !jugador) {
+		return 0;
+	}
+	const float efectividades[6][6] = {
+		// NORMAL, FUEGO, AGUA, PLANTA, ELECTRICO, ROCA
+		{ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 }, // ATAQUE_NORMAL
+		{ 1.0, 1.0, 0.5, 3.0, 1.0, 1.0 }, // ATAQUE_FUEGO
+		{ 1.0, 3.0, 1.0, 1.0, 0.5, 1.0 }, // ATAQUE_AGUA
+		{ 1.0, 0.5, 1.0, 1.0, 1.0, 3.0 }, // ATAQUE_PLANTA
+		{ 1.0, 1.0, 3.0, 1.0, 1.0, 0.5 }, // ATAQUE_ELECTRICO
+		{ 1.0, 1.0, 1.0, 0.5, 3.0, 1.0 } // ATAQUE_ROCA
+	};
+
+	enum TIPO tipo_ataque = ataque->tipo;
+	enum TIPO tipo_pokemon_atacado = pokemon_tipo(pokemon_atacado);
+
+	int poder = (int)ataque->poder;
+	float efectividad = efectividades[tipo_ataque][tipo_pokemon_atacado];
+
+	if (efectividad == 1.0) {
+		if (jugador == juego->jugador_1) {
+			resultado->jugador1 = ATAQUE_REGULAR;
+		} else {
+			resultado->jugador2 = ATAQUE_REGULAR;
+		}
+	} else if (efectividad > 1.0) {
+		if (jugador == juego->jugador_1) {
+			resultado->jugador1 = ATAQUE_EFECTIVO;
+		} else {
+			resultado->jugador2 = ATAQUE_EFECTIVO;
+		}
+	} else if (efectividad < 1.0) {
+		if (jugador == juego->jugador_1) {
+			resultado->jugador1 = ATAQUE_INEFECTIVO;
+		} else {
+			resultado->jugador2 = ATAQUE_INEFECTIVO;
+		}
+	}
+
+	float res = (float)poder * efectividad;
+	return redondear_hacia_arriba(res);
+}
 ```

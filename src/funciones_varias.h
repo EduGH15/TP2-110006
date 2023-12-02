@@ -39,8 +39,25 @@ struct juego {
 	bool finalizado;
 };
 
+/**
+ * Guarda el nombre de un pokemon en un vector de nombres.
+ *
+ * Pre: pokemon y datos no son NULL. pokemon es un puntero válido a un pokemon_t.
+ *      datos es un puntero válido a un dato_t.
+ * Post: Se agrega el nombre del pokemon al vector de nombres en datos.
+ *       La cantidad de nombres en datos se incrementa en 1.
+ *       Devuelve true.
+ */
 bool guardar_nombres(void *pokemon, void *datos);
 
+/**
+ * Agrega un ataque al vector de posibles jugadas del adversario.
+ *
+ * Pre: ataque y adversario no son NULL. ataque es un puntero válido a un ataque_t.
+ *      adversario es un puntero válido a un adversario_t.
+ * Post: Se agrega el nombre del ataque al vector de posibles jugadas en adversario.
+ *       La cantidad de jugadas en adversario se incrementa en 1.
+ */
 void agregar_ataque_a_vector(const struct ataque *ataque, void *adversario);
 
 /*
@@ -140,12 +157,5 @@ Post: Elimina el ataque utilizado del árbol de ataques disponibles del jugador.
       Si jugador o ataque son NULL, la función no realiza ninguna acción.
 */
 void eliminar_ataque_utilizado(jugador_t *jugador, const struct ataque *ataque);
-
-/*
-Pre:  Recibe dos punteros void (elemento y aux). Se asume que elemento apunta a una estructura de tipo ataque_t y
-      aux apunta a una estructura de tipo ataque_t o es NULL.
-Post: Si aux es NULL, copia la información del ataque (elemento) en aux y devuelve true. Si aux no es NULL, devuelve false.
-*/
-bool hay_ataque(void *elemento, void *aux);
 
 #endif // FUNCIONES_VARIAS_H_
