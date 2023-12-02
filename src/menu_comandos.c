@@ -9,14 +9,15 @@ Post: Devuelve un puntero a una estructura de tipo comando_t correctamente inici
 */
 comando_t *comando_crear(const char *nombre, const char *instruccion,
 			 const char *descripcion,
-			 COMANDO_ESTADO (*funcion)(void *, void* contexto), void* contexto)
+			 COMANDO_ESTADO (*funcion)(void *, void *contexto),
+			 void *contexto)
 {
-	if (!nombre || !instruccion || !descripcion || !funcion){
+	if (!nombre || !instruccion || !descripcion || !funcion) {
 		return NULL;
 	}
 
 	comando_t *comando = malloc(sizeof(comando_t));
-	if (comando == NULL){
+	if (comando == NULL) {
 		return NULL;
 	}
 
@@ -28,13 +29,14 @@ comando_t *comando_crear(const char *nombre, const char *instruccion,
 	return comando;
 }
 
-menu_t *menu_crear(){
-    menu_t *menu = calloc(1, sizeof(menu_t));
-	if(!menu){
+menu_t *menu_crear()
+{
+	menu_t *menu = calloc(1, sizeof(menu_t));
+	if (!menu) {
 		return NULL;
 	}
 	menu->comandos = hash_crear(10);
-	if(!menu->comandos){
+	if (!menu->comandos) {
 		free(menu);
 		return NULL;
 	}
@@ -43,84 +45,90 @@ menu_t *menu_crear(){
 
 menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 			     const char *instruccion, const char *descripcion,
-			     COMANDO_ESTADO (*funcion)(void *, void *), void* contexto)
+			     COMANDO_ESTADO (*funcion)(void *, void *),
+			     void *contexto)
 {
-	if(!menu || !nombre || !instruccion || !descripcion || !funcion){
+	if (!menu || !nombre || !instruccion || !descripcion || !funcion) {
 		return NULL;
 	}
 
-    comando_t *comando = comando_crear(nombre, instruccion, descripcion, funcion, contexto);
-    if (comando == NULL)
-    {	
-        return NULL;
-    }
+	comando_t *comando = comando_crear(nombre, instruccion, descripcion,
+					   funcion, contexto);
+	if (comando == NULL) {
+		return NULL;
+	}
 
-    if (hash_insertar(menu->comandos, instruccion, comando, NULL) == NULL)
-    {
-        free(comando);
-        return NULL;
-    }
+	if (hash_insertar(menu->comandos, instruccion, comando, NULL) == NULL) {
+		free(comando);
+		return NULL;
+	}
 
-    return menu;
+	return menu;
 }
 
 menu_t *menu_eliminar_comando(menu_t *menu, const char *instruccion)
 {
-	if (!menu || !instruccion || hash_contiene(menu->comandos, instruccion) == false)
-    {
-        return NULL;
-    }
+	if (!menu || !instruccion ||
+	    hash_contiene(menu->comandos, instruccion) == false) {
+		return NULL;
+	}
 
-    comando_t *comando = hash_quitar(menu->comandos, instruccion);
-    free(comando);
+	comando_t *comando = hash_quitar(menu->comandos, instruccion);
+	free(comando);
 
-    return menu;
+	return menu;
 }
 
-COMANDO_ESTADO menu_ejecutar_comando(menu_t *menu, const char *instruccion){
-	if(menu == NULL || instruccion == NULL){
-        return COMANDO_INEXISTENTE;
-    }
+COMANDO_ESTADO menu_ejecutar_comando(menu_t *menu, const char *instruccion)
+{
+	if (menu == NULL || instruccion == NULL) {
+		return COMANDO_INEXISTENTE;
+	}
 
-    comando_t *comando = hash_obtener(menu->comandos, instruccion);
-    if(comando == NULL){
-        return COMANDO_INEXISTENTE;
-    }
+	comando_t *comando = hash_obtener(menu->comandos, instruccion);
+	if (comando == NULL) {
+		return COMANDO_INEXISTENTE;
+	}
 
-    return comando->funcion(menu, comando->contexto);
-
+	return comando->funcion(menu, comando->contexto);
 }
 
-bool menu_contiene_comando(menu_t *menu, const char *instruccion){
-	if(menu == NULL ||	instruccion == NULL || hash_obtener(menu->comandos, instruccion) == NULL){
+bool menu_contiene_comando(menu_t *menu, const char *instruccion)
+{
+	if (menu == NULL || instruccion == NULL ||
+	    hash_obtener(menu->comandos, instruccion) == NULL) {
 		return false;
 	}
 	return true;
 }
 
-comando_t *menu_obtener_comando(menu_t *menu, const char *instruccion){
-	if(menu == NULL ||   instruccion == NULL){
-        return NULL;
-    }
-    return hash_obtener(menu->comandos, instruccion);
+comando_t *menu_obtener_comando(menu_t *menu, const char *instruccion)
+{
+	if (menu == NULL || instruccion == NULL) {
+		return NULL;
+	}
+	return hash_obtener(menu->comandos, instruccion);
 }
 
-bool menu_vacio(menu_t *menu){
-	if(menu == NULL){
-        return true;
-    }
-    return hash_cantidad(menu->comandos) == 0;
+bool menu_vacio(menu_t *menu)
+{
+	if (menu == NULL) {
+		return true;
+	}
+	return hash_cantidad(menu->comandos) == 0;
 }
 
-size_t menu_cantidad_comandos(menu_t *menu){
-	if(menu == NULL){
+size_t menu_cantidad_comandos(menu_t *menu)
+{
+	if (menu == NULL) {
 		return 0;
 	}
 	return hash_cantidad(menu->comandos);
 }
 
-void menu_destruir(menu_t *menu){
-	if(menu == NULL){
+void menu_destruir(menu_t *menu)
+{
+	if (menu == NULL) {
 		return;
 	}
 	hash_destruir_todo(menu->comandos, free);
