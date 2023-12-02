@@ -232,6 +232,7 @@ Al iniciar el main, comenzamos definiendo variables y estructuras necesarias par
 ```
 
 Gracias al TDA Menu podemos crear diversos comandos que pueden ser utilizados por el usuario, entre ellos se encuentra:
+
 1.- "p": permite pedirle un archivo al usuario. realizamos validaciones para que el usuario no pueda ingresar nombres incorrectos, archivos con pokemones insuficientes o para que solo cargue una vez un archivo.
 
 2.- "a": permite mostrarle al usuario los comandos disponibles para utilizar. Lo ideal seria usar un menu_con_cada_comando que permita mostrar la descripción de cada comando, pero por falta de tiempo no se pudo.
