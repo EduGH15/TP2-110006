@@ -12,25 +12,25 @@
 typedef enum {
 	ERROR_CARGAR,
 	COMANDO_INEXISTENTE,
-      CARGA_EXITOSA,
-      ARCHIVO_YA_CARGADO,
-      ESTADO_OK,
-      ESTADO_ERROR,
-      POKES_INSUFICIENTES,
-      POKES_REPETIDOS,
-      POKES_INEXISTENTES,
-      SIN_POKES,
-      CARGA_POKES_EXITOSA,
-      ATAQUE_REALIZADO,
-      JUGADA_ERROR
+	CARGA_EXITOSA,
+	ARCHIVO_YA_CARGADO,
+	ESTADO_OK,
+	ESTADO_ERROR,
+	POKES_INSUFICIENTES,
+	POKES_REPETIDOS,
+	POKES_INEXISTENTES,
+	SIN_POKES,
+	CARGA_POKES_EXITOSA,
+	ATAQUE_REALIZADO,
+	JUGADA_ERROR
 } COMANDO_ESTADO;
 
 typedef struct comando {
-	const char* nombre;
-	const char* instruccion;
-      const char* descripcion;
+	const char *nombre;
+	const char *instruccion;
+	const char *descripcion;
 	COMANDO_ESTADO (*funcion)(void *, void *);
-	void* contexto;
+	void *contexto;
 } comando_t;
 
 typedef struct menu {
@@ -55,7 +55,8 @@ Post: Agrega un nuevo comando al menú con la información proporcionada. Devuel
 */
 menu_t *menu_agregar_comando(menu_t *menu, const char *nombre,
 			     const char *instruccion, const char *descripcion,
-			     COMANDO_ESTADO (*funcion)(void *, void *), void* contexto);
+			     COMANDO_ESTADO (*funcion)(void *, void *),
+			     void *contexto);
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo menu_t (menu) y una cadena de caracteres no nula (instruccion).
@@ -66,7 +67,6 @@ Post: Elimina el comando asociado a la instrucción dada del menú y libera la m
       Si hay algún error (puntero nulo o la instrucción no existe en el menú), devuelve NULL.
 */
 menu_t *menu_eliminar_comando(menu_t *menu, const char *instruccion);
-
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo menu_t (menu) y una cadena de caracteres no nula (instruccion).

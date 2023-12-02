@@ -11,37 +11,37 @@
 #include "abb.h"
 #include "adversario.h"
 
-typedef struct datos{
-    char* nombres[3];
-    size_t cantidad_nombres;
-}dato_t;
+typedef struct datos {
+	char *nombres[3];
+	size_t cantidad_nombres;
+} dato_t;
 
 struct adversario {
-    lista_t* pokemon;
-    lista_t* pokemones_disponibles;
-    lista_t* pokemones_jugador;
-    jugada_t posibles_jugadas[9];
-    size_t cantidad_jugadas;
+	lista_t *pokemon;
+	lista_t *pokemones_disponibles;
+	lista_t *pokemones_jugador;
+	jugada_t posibles_jugadas[9];
+	size_t cantidad_jugadas;
 };
 
 typedef struct {
-    lista_t* pokemones;
-    abb_t* ataques_disponibles;
-    int puntaje;
+	lista_t *pokemones;
+	abb_t *ataques_disponibles;
+	int puntaje;
 } jugador_t;
 
 struct juego {
-    jugador_t* jugador_1;   
-    jugador_t* jugador_2; 
-    informacion_pokemon_t* info_pokemon;
-    lista_t* pokemones_totales;
-    int cantidad_rondas;
-    bool finalizado;
+	jugador_t *jugador_1;
+	jugador_t *jugador_2;
+	informacion_pokemon_t *info_pokemon;
+	lista_t *pokemones_totales;
+	int cantidad_rondas;
+	bool finalizado;
 };
 
-bool guardar_nombres(void* pokemon, void* datos);
+bool guardar_nombres(void *pokemon, void *datos);
 
-void agregar_ataque_a_vector(const struct ataque* ataque, void* adversario);
+void agregar_ataque_a_vector(const struct ataque *ataque, void *adversario);
 
 /*
 Pre:  Recibe dos punteros void (elemento1 y elemento2), que se asumen apuntan a cadenas de caracteres.
@@ -66,7 +66,7 @@ Post: Devuelve un puntero a una estructura de tipo jugador_t correctamente inici
       una lista de pokemones y un árbol de ataques disponibles. El puntaje se inicializa en 0.
       En caso de error, devuelve NULL.
 */
-jugador_t* jugador_crear();
+jugador_t *jugador_crear();
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo jugador_t que debe estar inicializada.
@@ -74,7 +74,7 @@ Post: Libera los recursos asociados al jugador, incluyendo la destrucción de la
       el árbol de ataques disponibles y la liberación de la memoria del propio jugador.
       Si el puntero a jugador es NULL, la función no realiza ninguna acción.
 */
-void jugador_destruir(jugador_t* jugador);
+void jugador_destruir(jugador_t *jugador);
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo pokemon_t (pokemon) y un puntero void (contexto),
@@ -83,7 +83,6 @@ Post: Agrega el pokemon dado a la lista apuntada por el contexto. Si el pokemon 
       la función no realiza ninguna acción.
 */
 void agregar_pokemon_a_lista(pokemon_t *pokemon, void *contexto);
-
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo ataque (ataque) y un puntero void (abb),
@@ -100,7 +99,8 @@ Post: Agrega los pokemones dados a la lista de pokemones del jugador. Además, a
       de ataques disponibles del jugador. Si algún pokemon es NULL, no se realiza ninguna acción para ese pokemon.
 */
 
-void agregar_pokemon_a_jugador(jugador_t *jugador, pokemon_t *pokemon1, pokemon_t *pokemon2, pokemon_t *pokemon3);
+void agregar_pokemon_a_jugador(jugador_t *jugador, pokemon_t *pokemon1,
+			       pokemon_t *pokemon2, pokemon_t *pokemon3);
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo ataque (ataque), un puntero a una estructura de tipo pokemon_t
@@ -111,7 +111,10 @@ Post: Calcula la efectividad del ataque sobre el pokemon atacado utilizando una 
       el tipo de ataque y las columnas representan el tipo del pokemon atacado,actualiza el resultado de la jugada y 
       devuelve el puntaje obtenido, redondeado hacia arriba, teniendo en cuenta el poder del ataque y la efectividad contra el tipo del pokemon.
 */
-int calcular_efectividad_y_puntaje(const struct ataque* ataque, pokemon_t* pokemon_atacado, resultado_jugada_t* resultado, juego_t* juego, jugador_t* jugador);
+int calcular_efectividad_y_puntaje(const struct ataque *ataque,
+				   pokemon_t *pokemon_atacado,
+				   resultado_jugada_t *resultado,
+				   juego_t *juego, jugador_t *jugador);
 
 /*
 Pre:  Recibe dos punteros void (elemento y contexto). Se asume que elemento apunta a una estructura de tipo pokemon_t
@@ -128,7 +131,7 @@ Pre:  Recibe un puntero a una estructura de tipo jugador_t (jugador) y un punter
 Post: Devuelve true si el ataque ya ha sido utilizado por el jugador (se encuentra en el árbol de ataques disponibles),
       y false en caso contrario. Si jugador o ataque son NULL, devuelve false.
 */
-bool ataque_ya_utilizado(jugador_t* jugador, const struct ataque* ataque);
+bool ataque_ya_utilizado(jugador_t *jugador, const struct ataque *ataque);
 
 /*
 Pre:  Recibe un puntero a una estructura de tipo jugador_t (jugador) y un puntero a una estructura de tipo ataque (ataque).
@@ -144,6 +147,5 @@ Pre:  Recibe dos punteros void (elemento y aux). Se asume que elemento apunta a 
 Post: Si aux es NULL, copia la información del ataque (elemento) en aux y devuelve true. Si aux no es NULL, devuelve false.
 */
 bool hay_ataque(void *elemento, void *aux);
-
 
 #endif // FUNCIONES_VARIAS_H_
