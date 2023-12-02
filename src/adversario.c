@@ -28,8 +28,6 @@ bool guardar_nombres(void* pokemon, void* datos){
     pokemon_t* pokemon_nuevo = pokemon;
     dato_t* datos_nuevos = datos;
     datos_nuevos->nombres[datos_nuevos->cantidad_nombres] = (char*)pokemon_nombre(pokemon_nuevo);
-    printf("Los pokemones del adversario:\n");
-    printf("%s\n", datos_nuevos->nombres[datos_nuevos->cantidad_nombres]);
     datos_nuevos->cantidad_nombres++;
     return true;
 }
@@ -37,8 +35,6 @@ bool guardar_nombres(void* pokemon, void* datos){
 void agregar_ataque_a_vector(const struct ataque* ataque, void* adversario){
     adversario_t* adversario_nuevo = adversario;
     strcpy(adversario_nuevo->posibles_jugadas[adversario_nuevo->cantidad_jugadas].ataque,ataque->nombre);
-    // printf("El ataque del pokemon adversario es:\n");
-    // printf("%s\n", adversario_nuevo->posibles_jugadas[adversario_nuevo->cantidad_jugadas].ataque);
     adversario_nuevo->cantidad_jugadas++;
 }
 
@@ -60,17 +56,10 @@ adversario_t *adversario_crear(lista_t *pokemon)
 		return NULL;
 	}
 
-    // adversario->ataques_disponibles = abb_crear(comparador_cadenas);
-	// if(!adversario->ataques_disponibles){
-	// 	lista_destruir(adversario->pokemones_disponibles);
-	// 	free(adversario);
-	// 	return NULL;
-	// }
 	adversario->pokemones_jugador = lista_crear();
 
     if(!adversario->pokemones_jugador) {
 		lista_destruir(adversario->pokemones_disponibles);
-		//abb_destruir(adversario->ataques_disponibles);
         free(adversario);
         return NULL;
     }
@@ -97,9 +86,6 @@ bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
         indice_pokemon1 = rand() % cantidad_pokemon;
         indice_pokemon1 = rand() % cantidad_pokemon;
     }
-    // printf("indice1: %i\n", indice_pokemon1);
-    // printf("indice2: %i\n", indice_pokemon2);
-    // printf("indice2: %i\n", indice_pokemon3);
 
 	pokemon_t* pokemon1 = lista_elemento_en_posicion(adversario->pokemon, (size_t)indice_pokemon1);
 	pokemon_t* pokemon2 = lista_elemento_en_posicion(adversario->pokemon, (size_t)indice_pokemon2);
@@ -116,10 +102,6 @@ bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
 	lista_insertar(adversario->pokemones_disponibles, pokemon2);
 	lista_insertar(adversario->pokemones_jugador, pokemon3);
 	
-    // con_cada_ataque(pokemon1, agregar_ataque_a_abb, adversario->ataques_disponibles);
-	// con_cada_ataque(pokemon2, agregar_ataque_a_abb, adversario->ataques_disponibles);
-    // con_cada_ataque(pokemon3, agregar_ataque_a_abb, adversario->ataques_jugador);
-
     return true;
 }
 
@@ -135,12 +117,10 @@ bool adversario_pokemon_seleccionado(adversario_t *adversario, char *nombre1,
     pokemon_t *pokemon3 = lista_buscar_elemento(adversario->pokemon, comparador_buscar_pokemon, nombre3);
 
     if (!pokemon1 || !pokemon2 || !pokemon3) {
-        printf("ALGUN PUNTERO ES NULO EN POKEMON");
         return false;
     }
 
     if (strcmp(nombre1, nombre2) == 0 || strcmp(nombre1, nombre3) == 0 || strcmp(nombre2, nombre3) == 0) {
-        printf("EL ADVERSARIO ESTA REPITIENDO POKEMONES");
         return false;
     }
 
@@ -170,15 +150,14 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
     jugada_t j = { .ataque = "", .pokemon = "" };
 
     if (lista_vacia(adversario->pokemones_disponibles)) {
-        printf("EL ADVERSARIO NO TIENE POKEMONES DISPONIBLES\n");
         return j;
     }
 
     int indice_jugada = rand() % (int)adversario->cantidad_jugadas;
     strcpy(j.ataque,adversario->posibles_jugadas[indice_jugada].ataque);
     strcpy(j.pokemon,adversario->posibles_jugadas[indice_jugada].pokemon);
-    printf("El nombre del pokemon del adversario que va a atacar es: %s\n", j.pokemon);
-    printf("El pokemon adversario usó: %s\n", j.ataque);
+    // printf("El nombre del pokemon del adversario que va a atacar es: %s\n", j.pokemon);
+    // printf("El pokemon adversario usó: %s\n", j.ataque);
 
     adversario->posibles_jugadas[indice_jugada] = adversario->posibles_jugadas[adversario->cantidad_jugadas - 1];
     (adversario->cantidad_jugadas)--;
@@ -190,14 +169,13 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
 
 void adversario_informar_jugada(adversario_t *a, jugada_t j)
 {
-	//Dejar vacia o cambiar estrategia para hacerlo mas inteligente. 
+    return;
 }
 
 void adversario_destruir(adversario_t *adversario)
 {	
  	if (adversario) {
 		lista_destruir(adversario->pokemones_disponibles);
-		//abb_destruir(adversario->ataques_disponibles);
 		lista_destruir(adversario->pokemones_jugador);
 		free(adversario);
 
