@@ -128,7 +128,7 @@ COMANDO_ESTADO mostrar_mensaje_ayuda(void *arg1, void *arg2)
 	       "	║'u'(mostrar pokes user): Muestra los pokemones del usuario.   ║\n"
 	       "	║'d'(mostrar pokes ad): Muestra los pokemones del adversario.  ║\n"
 	       "	║'e'(elegir): Elige los pokemones que usará el usuario.        ║\n"
-		   "	║'r'(Realizar): Realiza una jugada de parte del usuario.       ║\n"
+	       "	║'r'(Realizar): Realiza una jugada de parte del usuario.       ║\n"
 	       "	║'p'(Pedir): Pide el archivo y realiza validaciones.           ║\n"
 	       "	╚══════════════════════════════════════════════════════════════╝\n\n");
 	return ESTADO_OK;

@@ -131,7 +131,7 @@ void jugar()
 		(obtenido = juego_jugar_turno(j, validaj11, validaj21))
 				.jugador1 == ATAQUE_ERROR,
 		"No se puede volver a utilizar el mismo ataque/pokemon dos veces");
-	
+
 	pa2m_afirmar(juego_obtener_puntaje(j, JUGADOR1) == 1,
 		     "El puntaje del jugador 1 es 1");
 	pa2m_afirmar(juego_obtener_puntaje(j, JUGADOR2) == 2,
