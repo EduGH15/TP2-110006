@@ -120,11 +120,13 @@ void jugar()
 		(obtenido = juego_jugar_turno(j, validaj11, invalida2))
 				.jugador2 == ATAQUE_ERROR,
 		"Realizar una jugada inválida con el segundo jugador devuelve ATAQUE_ERROR para el segundo jugador");
+
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, validaj11, validaj21))
 					.jugador1 == ATAQUE_REGULAR &&
 			obtenido.jugador2 == ATAQUE_REGULAR,
 		"Realizar una jugada valida de tipo normal devuelve ATAQUE_REGULAR");
+
 	pa2m_afirmar(
 		(obtenido = juego_jugar_turno(j, validaj11, validaj21))
 				.jugador1 == ATAQUE_ERROR,
